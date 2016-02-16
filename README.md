@@ -1,2 +1,2 @@
 # 368_Project
-Project for ECE 368, probably using Deep Neural Networks and image processing
+Project for ECE 368, an automatic class scheduler for Purdue ECE classes
