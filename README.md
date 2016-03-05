@@ -1,9 +1,15 @@
 # 368_Project
 Project for ECE 368, an automatic class scheduler for Purdue ECE classes
 
+It's hosted on [Google App Engine](https://cloud.google.com/appengine/docs/python/)
+
 The application is accessible at: http://ece-degree-builder.appspot.com/
 
 The api output is accessible at: http://ece-degree-builder.appspot.com/api/
+
+#src Folder
+
+Contains the application source code
 
 ## Data Folder
 
