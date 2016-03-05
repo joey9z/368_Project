@@ -7,7 +7,7 @@ The application is accessible at: http://ece-degree-builder.appspot.com/
 
 The api output is accessible at: http://ece-degree-builder.appspot.com/api/
 
-#src Folder
+##src Folder
 
 Contains the application source code
 
