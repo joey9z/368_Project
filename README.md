@@ -2,6 +2,7 @@
 Project for ECE 368, an automatic class scheduler for Purdue ECE classes
 
 The application is accessible at: http://ece-degree-builder.appspot.com/
+
 The api output is accessible at: http://ece-degree-builder.appspot.com/api/
 
 ## Data Folder
