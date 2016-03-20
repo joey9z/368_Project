@@ -1,0 +1,65 @@
+368 methods for project
+============================================
+{
+//courses and priorities
+
+//core courses
+//this part will be needed in the constructor
+
+for each core/required course there is already credit for, remove from a premade list of core course and shift the one next to it to it's place (linked list seems good for this)
+//premade list ["MA161,CH115,PHYS172,ENGR132,COM114,MA162,CH...uh, ok, so first issue, it doesn't make sense to "just shift them" because that may disobey prereqs, therefore, it
+//would be better to have each course also have a field that is the identity of the next course in it's sequence. Then when the course is satisfied, you reference the "next course
+//in sequence, and check if prerequisites are satisfied(which each course then needs prerequisites fields) and if not, select one of those prerequisites, but if they are
+//satisfied, select the course and put it in the place of the one there is credit for. If there is no "next course in sequence" for a course, then the "just shift them" can be done.
+//one last note, it makes more sense to take ece201 before linear algebra and stuff like that.
+
+if we have the ability to specify courses they definitely want to take, put those in priority right after core.
+//add gen eds as last priority?
+
+
+
+
+}
+
+============================================
+can probably make the keywords list a global
+{(parameters are a list of keyword strings (if not made global), and the strings for each course description (so this means we should use an 'explode' method at some point))
+//weigh the strings for priorities in non core courses, (and maybe consider the ability to put them in the list with core courses.
+
+//for each word in course
+//inputs are an array of keyword strings
+first check should be in the course's title for matches (this compensates for some courses' lack of description. Add some additional priority if words appear here
+second check is to go through course description
+//the goal is to get these as a value between 0 and 1 so that certain optimization methods can be used.
+//a simple proportion doesn't work, or does it? it seems like the only logical way. Any scaling eliminates the possibility of keeping in the range of 0 to 1, and
+//a direct count is too dependent on length.
+either sum the proportions for each keyword and compare for each course or take the minimum of -1*sum(proportion*ln(proportion)) for each course for a more logarithmic comparison
+
+}
+
+============================================
+//parsing descriptions
+{
+for courses, could do each course separated by each identification of "ECE ##### -" the dash is necessary for the case of ECE202, which has "ECE 20100" in its description.
+after we have separated each course in the document, then explode the course description and compare to the keywords as described in a different method description.
+
+also note that each course is separated by 2 newlines. could possibly separate by this instead.
+credits and whatnot can be parsed fairly easily based on newline structure before exploding.
+}
+
+============================================
+//mapping of courses. hmm, could maybe map, but remember that lecture about ordering used trees because they have hierarchial ordering.
+{
+//one thing to note: a course may then have "multiple parents" or courses that have it as a prerequisite, so a tree does not quite work. This would be a task that requires
+//learning something new.
+}
+
+============================================
+
+-have a class for schedule
+-have overloaded constructor for coops or summer semesters, otherwise default constructor will be set to initialize simple {"fall1","spring1","fall2","spring2"...} array field
+for coops in the constructor, have the rotation inserted that determines which initialization to use (basically, using data from GUI input, the semesters are determined)
+-have a struct or dictionary for courses, where each course is assigned a priority value, maybe make it a linked list for easy shifting
+
+
+This project is for those attending for 4 years
