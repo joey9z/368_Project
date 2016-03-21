@@ -1,27 +1,45 @@
-#!/usr/bin/env python
-#
-# Copyright 2007 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 import webapp2
 import os
+import jinja2
 from lxml import html
 from google.appengine.api import urlfetch
-import jinja2
+from google.appengine.ext import ndb
 
 jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
 
+###############################
+## Database Models
+##
+## Reference: https://cloud.google.com/appengine/docs/python/ndb/properties
+###############################
+
+#################
+## Course Model
+#################
+
+class Course(ndb.Model):
+	description = db.TextProperty()    # unicode string of unlimited length
+	fomat = db.StringProperty()        # unicode string up to 1500 bytes
+	number = db.IntegerProperty()      # 64-bit signed integer      
+	credits = db.IntegerProperty()
+	department = db.StringProperty()
+	semesters = db.StringProperty(repeated=True)
+    campuses = db.StringProperty(repeated=True)
+    prerequisites = db.LocalStructuredProperty(Prerequisite, repeated=True) # lists of complete OR conditions
+
+########################
+## Prerequisite Model
+########################
+    
+class Prerequisite(ndb.Model):
+    courses = db.StringProperty(repeated=True)   # list of AND conditions
+
+###############################
+## Setup Web Request Handlers
+##
+## Reference: https://cloud.google.com/appengine/docs/python/tools/webapp2
+###############################
+    
 class MainHandler(webapp2.RequestHandler):
     def get(self):
         template = jinja.get_template('index.html')
@@ -31,11 +49,14 @@ class MainHandler(webapp2.RequestHandler):
         
 class APIHandler(webapp2.RequestHandler):
     def get(self):
-        url = "https://selfservice.mypurdue.purdue.edu/prod/bwckctlg.p_disp_course_detail?cat_term_in=201420&subj_code_in=PHYS&crse_numb_in=17200"
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            tree = html.fromstring(result.content)
-            self.response.write(tree.text_content())
+        html.parse("catalog.html")
+
+def get_course(dept, num):
+    url = "https://selfservice.mypurdue.purdue.edu/prod/bwckctlg.p_disp_course_detail?cat_term_in=201420&subj_code_in={dept}&crse_numb_in={num}".format(dept=dept, num=num)
+    result = urlfetch.fetch(url)
+    if result.status_code == 200:
+        tree = html.fromstring(result.content)
+        return tree.text_content()
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
