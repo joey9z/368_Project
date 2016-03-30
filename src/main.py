@@ -104,6 +104,10 @@ def get_course(dept, num):
         
         m = re.search("\.\s(.*)\sTypically",text)
         des = m.group(1) if m else "nomatch"
+        
+        # TODO: Credit hours aren't fixed for every course
+        # Credit Hours: 2.00 or 3.00. 
+        # Credit Hours: 1.00 to 18.00. 
 
         m = re.search("Credit Hours: (\d\.\d\d)",text)
         cr = m.group(1) if m else "-1"
@@ -120,9 +124,12 @@ def get_course(dept, num):
         campus = m.group(1).strip().split("\n\n") if m else ["nomatch"]
 
         # TODO prereq regex and decomosition of prereqs into lists of AND conditions
+        # How do we handle co-requisite courses?
         
         # prereqList = parsePrereqs(text);
         # prereq = Prerequisite(parent=ndb.Key('Course'), courses=prereqList)
+        # course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
+        # See Zool Z1030
         
         # create course entity
         course = Course(number=int(num), department=dept, form=form, description=des, credits=float(cr), semesters=sem, campuses=campus, id=dept + num)
