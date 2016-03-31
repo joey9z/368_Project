@@ -1,12 +1,9 @@
 import webapp2
-import os
 import re
-import jinja2
+
 from lxml import html
 from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
-
-jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
 
 ###############################
 ## Database Models
@@ -35,25 +32,12 @@ class Course(ndb.Model):
 	semesters = ndb.StringProperty(repeated=True)
 	campuses = ndb.StringProperty(repeated=True)
 	prerequisites = ndb.LocalStructuredProperty(Prerequisite, repeated=True) # lists of complete OR conditions
-
-
-###############################
-## Setup Web Request Handlers
-##
-## Reference: https://cloud.google.com/appengine/docs/python/tools/webapp2
-###############################
-    
-class MainHandler(webapp2.RequestHandler):
-    def get(self):
-        template = jinja.get_template('index.html')
-        html = template.render()
-        self.response.headers['Content-Type'] = 'text/html'
-        self.response.write(html)
         
 #######################
 ## API Request Handler
 ##
 ## Example query: http://localhost:{port}/api?dept=ECE&course=30200
+## Outputs parsed course parameters
 ## If no department or course is specified, it defaults to ECE 20100
 ######################   
         
@@ -65,6 +49,7 @@ class APIHandler(webapp2.RequestHandler):
         
         # test course add function, and retrieve the course
         text = get_course(dept, course)
+        insert_course(dept, course, text)
         c = Course.get_by_id("{d}{c}".format(d=dept, c=course))
         
         # output the description as a test
@@ -73,8 +58,6 @@ class APIHandler(webapp2.RequestHandler):
         # output collected parameters to verify accuracy
         
         self.response.write("<h1>{dept} {num} ({cr} Credits)</h1>".format(dept = c.department, num = c.number, cr=c.credits))
-        self.response.write("<h2>Raw Text</h2>");
-        self.response.write(text)
         self.response.write("<h2>Description</h2>")
         self.response.write(c.description)
         self.response.write("<h2>Semesters Offered</h2>")
@@ -84,6 +67,42 @@ class APIHandler(webapp2.RequestHandler):
         self.response.write("<h2>Course Format</h2>")
         self.response.write(c.form)
         
+#######################
+## Raw Handler
+##
+## Example query: http://localhost:{port}/raw?dept=ECE&course=30200
+## Outputs plain text retrieved from Purdue's Catalog
+######################
+    
+class RawHandler(webapp2.RequestHandler):
+    def get(self):
+        dept = self.request.get("dept") or "ECE"
+        course = self.request.get("course") or "20100"
+        text = get_course(dept, course)
+        
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write(text)
+        
+class AdminHandler(webapp2.RequestHandler):
+    def get(self):
+        courses = update_db()
+        
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write("Welcome to the Admin Handler\n")
+        self.response.write("There are {num} courses".format(num=len(courses)))
+        
+###############################
+## Utility Functions
+###############################
+        
+def update_db():
+    with open("purdue_catalog.html") as data:
+        data = data.read()
+
+        m = re.findall("detail\?cat_term_in=\d{6}\&subj_code_in\=\w+&crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", data)
+        courses = m if m else "nomatch"
+
+        return courses
 
 def get_course(dept, num):
     host = "https://selfservice.mypurdue.purdue.edu/prod/bwckctlg.p_disp_course_detail"
@@ -98,48 +117,49 @@ def get_course(dept, num):
 
         # remove unicode non-breaking spaces to allow regexing
         text = text.replace(u'\xa0',u' ')
-
-        # Regexes for extracting class properties
-        # results go into capture group 1
-        
-        m = re.search("\.\s(.*)\sTypically",text)
-        des = m.group(1) if m else "nomatch"
-        
-        # TODO: Credit hours aren't fixed for every course
-        # Credit Hours: 2.00 or 3.00. 
-        # Credit Hours: 1.00 to 18.00. 
-
-        m = re.search("Credit Hours: (\d\.\d\d)",text)
-        cr = m.group(1) if m else "-1"
-
-        m = re.search("Typically offered (.*?)\.", text)
-        sem = m.group(1).split() if m else ["nomatch"]
-        
-        m = re.search("Schedule Types:\s((?:[\w ]+)(?:,[\w ]+)*) \s+", text)
-        form = m.group(1).split(", ") if m else ["nomatch"]
-        
-        # TODO: campus parsing fails on ECE 302
-        
-        m = re.search("campuses:\s*(.*)Learn", text,flags=re.DOTALL)
-        campus = m.group(1).strip().split("\n\n") if m else ["nomatch"]
-
-        # TODO prereq regex and decomosition of prereqs into lists of AND conditions
-        # How do we handle co-requisite courses?
-        
-        # prereqList = parsePrereqs(text);
-        # prereq = Prerequisite(parent=ndb.Key('Course'), courses=prereqList)
-        # course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
-        # See Zool Z1030
-        
-        # create course entity
-        course = Course(number=int(num), department=dept, form=form, description=des, credits=float(cr), semesters=sem, campuses=campus, id=dept + num)
-        # store course 
-        course.put()
-        # unnecessary with ndb 
-        # return tree.text_content()
         return text
+    
+def insert_course(dept, num, text):
+    # Regexes for extracting class properties
+    # results go into capture group 1
 
+    m = re.search("\.\s(.*)\sTypically",text)
+    des = m.group(1) if m else "nomatch"
+
+    # TODO: Credit hours aren't fixed for every course
+    # Credit Hours: 2.00 or 3.00. 
+    # Credit Hours: 1.00 to 18.00. 
+
+    m = re.search("Credit Hours: (\d\.\d\d)",text)
+    cr = m.group(1) if m else "-1"
+
+    m = re.search("Typically offered (.*?)\.", text)
+    sem = m.group(1).split() if m else ["nomatch"]
+
+    m = re.search("Schedule Types:\s((?:[\w ]+)(?:,[\w ]+)*) \s+", text)
+    form = m.group(1).split(", ") if m else ["nomatch"]
+
+    # TODO: campus parsing fails on ECE 302
+
+    m = re.search("campuses:\s*(.*)Learn", text,flags=re.DOTALL)
+    campus = m.group(1).strip().split("\n\n") if m else ["nomatch"]
+
+    # TODO prereq regex and decomosition of prereqs into lists of AND conditions
+    # How do we handle co-requisite courses?
+
+    # prereqList = parsePrereqs(text);
+    # prereq = Prerequisite(parent=ndb.Key('Course'), courses=prereqList)
+    # course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
+    # See Zool Z1030
+
+    # create course entity
+    course = Course(number=int(num), department=dept, form=form, description=des, credits=float(cr), semesters=sem, campuses=campus, id=dept + num)
+    # store course 
+    course.put()
+    # unnecessary with ndb
+            
 app = webapp2.WSGIApplication([
-    ('/', MainHandler),
-    ('/api/?', APIHandler)
+    ('/admin/?', AdminHandler),
+    ('/api/?', APIHandler),
+    ('/raw/?', RawHandler)
 ], debug=True)
