@@ -12,26 +12,35 @@ from google.appengine.ext import ndb
 ###############################
 
 ########################
-## Prerequisite Model
+## Requisite
 ########################
     
-class Prerequisite(ndb.Model):
-    courses = ndb.StringProperty(repeated=True)   # list of AND conditions
+class Requisite(ndb.Model):
+    course = ndb.StringProperty(repeated=True)   # course code, eg. "ECE20100"
+    type = ndb.BooleanProperty() # represents prerequisite (1) or co-requisite (0)
 
+########################
+## RequisiteList
+## See: https://cloud.google.com/appengine/docs/python/ndb/properties#structured
+########################
+    
+class RequisiteList(ndb.Model):
+    courses = ndb.LocalStructuredProperty(Requisite, repeated=True)   # list of AND conditions
 
 #################
 ## Course Model
 #################
 
 class Course(ndb.Model):
-	description = ndb.TextProperty()    # unicode string of unlimited length
-	form = ndb.StringProperty(repeated=True)        # unicode string up to 1500 bytes
-	number = ndb.IntegerProperty()      # 64-bit signed integer      
-	credits = ndb.FloatProperty()		# float because some classes have half credits (source: I got 3.5 credits for ENGR 141/2)
-	department = ndb.StringProperty()
-	semesters = ndb.StringProperty(repeated=True)
-	campuses = ndb.StringProperty(repeated=True)
-	prerequisites = ndb.LocalStructuredProperty(Prerequisite, repeated=True) # lists of complete OR conditions
+    title = ndb.StringProperty()        # unicode string up to 1500 bytes
+    description = ndb.TextProperty()    # unicode string of unlimited length
+    form = ndb.StringProperty(repeated=True)        # unicode string up to 1500 bytes
+    number = ndb.IntegerProperty()      # 64-bit signed integer      
+    credits = ndb.FloatProperty()		# float because some classes have half credits (source: I got 3.5 credits for ENGR 141/2)
+    department = ndb.StringProperty()
+    semesters = ndb.StringProperty(repeated=True)
+    campuses = ndb.StringProperty(repeated=True)
+    requisites = ndb.LocalStructuredProperty(RequisiteList, repeated=True) # lists of complete OR conditions
         
 #######################
 ## API Request Handler
@@ -57,7 +66,7 @@ class APIHandler(webapp2.RequestHandler):
         
         # output collected parameters to verify accuracy
         
-        self.response.write("<h1>{dept} {num} ({cr} Credits)</h1>".format(dept = c.department, num = c.number, cr=c.credits))
+        self.response.write("<h1>{dept} {num} - {title} ({cr} Credits)</h1>".format(dept = c.department, num = c.number, cr=c.credits, title=c.title))
         self.response.write("<h2>Description</h2>")
         self.response.write(c.description)
         self.response.write("<h2>Semesters Offered</h2>")
@@ -111,9 +120,7 @@ def get_course(dept, num):
     
     if result.status_code == 200:
         tree = html.fromstring(result.content)
-        
-        # get just the relevant text of the webpage 
-        text = tree[1][4][2][1][0].text_content()
+        text = tree[1][4][2].text_content()   # get just the relevant text of the webpage 
 
         # remove unicode non-breaking spaces to allow regexing
         text = text.replace(u'\xa0',u' ')
@@ -122,6 +129,11 @@ def get_course(dept, num):
 def insert_course(dept, num, text):
     # Regexes for extracting class properties
     # results go into capture group 1
+    
+    # TODO: regex to capture course title
+    
+    m = re.search("[\d\w]{5} - ([\w ]*)", text)
+    title = m.group(1) if m else "nomatch"
 
     m = re.search("\.\s(.*)\sTypically",text)
     des = m.group(1) if m else "nomatch"
@@ -153,7 +165,7 @@ def insert_course(dept, num, text):
     # See Zool Z1030
 
     # create course entity
-    course = Course(number=int(num), department=dept, form=form, description=des, credits=float(cr), semesters=sem, campuses=campus, id=dept + num)
+    course = Course(number=int(num), title=title, department=dept, form=form, description=des, credits=float(cr), semesters=sem, campuses=campus, id=dept + num)
     # store course 
     course.put()
     # unnecessary with ndb
