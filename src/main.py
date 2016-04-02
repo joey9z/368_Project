@@ -1,5 +1,6 @@
 import webapp2
 import re
+import PrereqParser
 
 from lxml import html
 from google.appengine.api import urlfetch
@@ -16,8 +17,9 @@ from google.appengine.ext import ndb
 ########################
     
 class Requisite(ndb.Model):
-    course = ndb.StringProperty(repeated=True)   # course code, eg. "ECE20100"
-    type = ndb.BooleanProperty() # represents prerequisite (1) or co-requisite (0)
+    course = ndb.StringProperty()   # course code, eg. "ECE20100"
+    # changed name to reqType, type is a keyword
+    reqType = ndb.BooleanProperty() # represents prerequisite (1) or co-requisite (0)
 
 ########################
 ## RequisiteList
@@ -75,6 +77,8 @@ class APIHandler(webapp2.RequestHandler):
         self.response.write(c.campuses)
         self.response.write("<h2>Course Format</h2>")
         self.response.write(c.form)
+        self.response.write("<h2>Requisites</h2>")
+        self.response.write(c.requisites)
         
 #######################
 ## Raw Handler
@@ -156,16 +160,32 @@ def insert_course(dept, num, text):
     m = re.search("campuses:\s*(.*)Learn", text,flags=re.DOTALL)
     campus = m.group(1).strip().split("\n\n") if m else ["nomatch"]
 
-    # TODO prereq regex and decomosition of prereqs into lists of AND conditions
+    # prereq regex and decomosition of prereqs into lists of AND conditions (works for most classes, not 477 and similar)
     # How do we handle co-requisite courses?
-
-    # prereqList = parsePrereqs(text);
-    # prereq = Prerequisite(parent=ndb.Key('Course'), courses=prereqList)
+    m = re.search("Prerequisites:(.*)",text,flags=re.DOTALL)
+    if m:
+        allReqs = []
+        prereqText = m.group(1).strip()
+        prereqText =  prereqText.encode('ascii', 'ignore') 
+        for i in PrereqParser.parseprereq(prereqText):
+            print i
+            reqArr = []
+            for j in i:
+                if j.find("-C") != -1:
+                    j = j.replace("-C","")
+                    reqArr.append(Requisite(course=j,reqType=False))
+                else:
+                    reqArr.append(Requisite(course=j,reqType=True))
+            allReqs.append(RequisiteList(courses=reqArr))
+    else:
+        allReqs = []
     # course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
     # See Zool Z1030
 
     # create course entity
-    course = Course(number=int(num), title=title, department=dept, form=form, description=des, credits=float(cr), semesters=sem, campuses=campus, id=dept + num)
+    course = Course(number=int(num), title=title, department=dept, form=form,
+                     description=des, credits=float(cr), semesters=sem,
+                     campuses=campus,requisites=allReqs, id=dept + num)
     # store course 
     course.put()
     # unnecessary with ndb
