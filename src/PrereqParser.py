@@ -40,9 +40,25 @@ def pullParen(stack):
 	stack.append(result)
 	return(stack)
 				
+def parse2(text):
+	text = text.replace("\n", " ").strip()
+	m = re.search("General Requirements:(.*)",text,flags=re.DOTALL)
+	text = m.group(1) if m else ""
+	text = text.replace("Course or Test:","")
+	text = text.replace("Minimum Grade of  D-","")
+	text = text.replace("May not be taken concurrently.","")
+	text = text.replace("(","")
+	text = text.replace(")","")
+	text = text.replace(" ", "")
+	print text
+	Ors = text.split("or")
+	return [i.split("and") for i in Ors]
+
 
 
 def parseprereq(text):
+	if text.find("General Requirements") != -1:	
+		return parse2(text)
 	# remove unneeded text, make parsing easier
 	text = text.replace("Undergraduate level", "")
 	text = text.replace("Minimum Grade of C-", "")

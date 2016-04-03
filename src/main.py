@@ -168,8 +168,12 @@ def insert_course(dept, num, text):
         prereqText = m.group(1).strip()
         prereqText =  prereqText.encode('ascii', 'ignore') 
         for i in PrereqParser.parseprereq(prereqText):
-            print i
             reqArr = []
+            for j in i:
+                if j.find(" ") != -1:
+                    i.remove(j)
+                    for k in j.strip().split():
+                        i.append(k)
             for j in i:
                 if j.find("-C") != -1:
                     j = j.replace("-C","")
