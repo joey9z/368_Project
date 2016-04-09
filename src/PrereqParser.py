@@ -1,6 +1,8 @@
 import re
+
 # not gonna lie, this is pretty much magic
 # returns a list (ish-its a generator) that contains all the different combinations of classes that are valid pre-reqs for the class
+
 def makeAndLists(prereqs, depth, current):
 	if(depth == len(prereqs)):
 		x = []
@@ -14,6 +16,13 @@ def makeAndLists(prereqs, depth, current):
 			for val in makeAndLists(prereqs, depth + 1, current + [j]):
 				yield val
 
+#########################
+##
+## TODO: Fails on ABE 45000
+## See: http://localhost:{port}/raw?dept=ABE&course=45000
+## And: http://localhost:{port}/api?dept=ABE&course=45000
+##
+########################
 
 def pullParen(stack):
 	resL = []
@@ -39,6 +48,7 @@ def pullParen(stack):
 	result = resS if group == "&" else resL
 	stack.append(result)
 	return(stack)
+
 				
 def parse2(text):
 	text = text.replace("\n", " ").strip()
@@ -53,7 +63,6 @@ def parse2(text):
 	print text
 	Ors = text.split("or")
 	return [i.split("and") for i in Ors]
-
 
 
 def parseprereq(text):
@@ -99,7 +108,6 @@ def parseprereq(text):
 		print "Sigh..."
 		return []
 
-	
 	if "&" in stack:
 		for i in stack:
 			if not isinstance(i,basestring):
@@ -114,7 +122,9 @@ def parseprereq(text):
 					OrList.append([j])
 			elif i != "|":
 				OrList.append([i]) 
-		return OrList																																																																																																																											
+		return OrList
+
+
 #test = "(Undergraduate level MA 16600 Minimum Grade of C- or Undergraduate level MA 16200 Minimum Grade of C-) and (Undergraduate level ENGR 13100 Minimum Grade of D- or Undergraduate level ENGR 14100 Minimum Grade of D- or Undergraduate level ENGR 13300 Minimum Grade of D-) and (Undergraduate level PHYS 17200 Minimum Grade of D- or Undergraduate level PHYS 15200 Minimum Grade of D-) and (Undergraduate level MA 26100 Minimum Grade of D- [may be taken concurrently] or Undergraduate level MA 17400 Minimum Grade of D- [may be taken concurrently] or Undergraduate level MA 18200 Minimum Grade of D- [may be taken concurrently] or Undergraduate level MA 27100 Minimum Grade of D- [may be taken concurrently])"
 #test2 = "(Undergraduate level  PHYS 17200 Minimum Grade of D- or Undergraduate level  PHYS 15200 Minimum Grade of D- or (Undergraduate level  PHYS 16200 Minimum Grade of D- and Undergraduate level  PHYS 16300 Minimum Grade of D-)   ) and (Undergraduate level  MA 16200 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 17100 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 17300 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 16900 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 16600 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MATH 16400 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MATH M2160 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 18100 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 16400 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MATH 16600 Minimum Grade of D- [may be taken concurrently])"
 #lists = parseprereq(test)
