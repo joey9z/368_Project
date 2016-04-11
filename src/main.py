@@ -6,15 +6,15 @@ from models import Requisite, RequisiteList, Course
 from lxml import html
 from google.appengine.api import urlfetch
         
-#######################
-## API Request Handler
-##
-## Example query: http://localhost:{port}/api?dept=ECE&course=30200
-## Outputs parsed course parameters
-## If no department or course is specified, it defaults to ECE 20100
-######################   
         
 class APIHandler(webapp2.RequestHandler):
+    """
+    API Request Handler
+
+    Example query: http://localhost:{port}/api?dept=ECE&course=30200
+    Used for diagnostics; outputs parsed course parameters
+    If no department or course is specified, it defaults to ECE 20100
+    """
     def get(self):
         dept = self.request.get("dept") or "ECE"
         course = self.request.get("course") or "20100"
@@ -35,21 +35,24 @@ class APIHandler(webapp2.RequestHandler):
         self.response.write(c.description)
         self.response.write("<h2>Semesters Offered</h2>")
         self.response.write(c.semesters)
+        #self.response.write("\nFall: " + str(c.isOfferedSem("Fall")))
+        #self.response.write("\nSpring: " + str(c.isOfferedSem("Spring")))
+        #self.response.write("\nSummer: " + str(c.isOfferedSem("Summer")))
         self.response.write("<h2>Campuses</h2>")
         self.response.write(c.campuses)
         self.response.write("<h2>Course Format</h2>")
         self.response.write(c.form)
         self.response.write("<h2>Requisites</h2>")
         self.response.write(c.requisites)
-        
-#######################
-## Raw Handler
-##
-## Example query: http://localhost:{port}/raw?dept=ECE&course=30200
-## Outputs plain text retrieved from Purdue's Catalog
-######################
     
 class RawHandler(webapp2.RequestHandler):
+    """
+    Raw Handler
+
+    Example query: http://localhost:{port}/raw?dept=ECE&course=30200
+    Used for diagnostics; outputs plain text retrieved from Purdue's Catalog
+    If no department or course is specified, it defaults to ECE 20100
+    """
     def get(self):
         dept = self.request.get("dept") or "ECE"
         course = self.request.get("course") or "20100"
@@ -59,6 +62,12 @@ class RawHandler(webapp2.RequestHandler):
         self.response.write(text)
         
 class AdminHandler(webapp2.RequestHandler):
+    """
+    Admin Handler
+
+    Example query: http://localhost:{port}/admin
+    Used for diagnostics; outputs the total list of purdue courses numbers
+    """
     def get(self):
         courses = update_db()
         
@@ -72,6 +81,8 @@ class AdminHandler(webapp2.RequestHandler):
 ###############################
         
 def update_db():
+    """ Updates the database with a list of courses parsed from purdue_catalog.html """
+    
     with open("purdue_catalog.html") as data:
         data = data.read()
 
@@ -90,6 +101,8 @@ def update_db():
         return courses
 
 def get_course(dept, num):
+    """ Retrieves the raw course text from the Purdue course catalog """
+    
     # semester: 10 = Fall, 20 = Spring, 30 = Summer
     host = "https://selfservice.mypurdue.purdue.edu/prod/bwckctlg.p_disp_course_detail"
     query = "?cat_term_in={term}&subj_code_in={dept}&crse_numb_in={num}".format(term="201620", dept=dept, num=num)
@@ -104,7 +117,7 @@ def get_course(dept, num):
         return text
     
 def insert_course(dept, num, text):
-    # Regexes for extracting class properties; results go into capture group 1
+    """ Regexes for extracting class properties; results go into capture group 1 """
 
     # Course Title  
     m = re.search("[\d\w]{5} - ([\w ]*)", text)

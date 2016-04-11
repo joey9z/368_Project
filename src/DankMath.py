@@ -1,8 +1,8 @@
 # The Dank Math Module
-from operator import attrgetter#for finding object with maximum weight in a list of objects
+from operator import attrgetter #for finding object with maximum weight in a list of objects
 
-#determines the fraction of course description words that were in the keyword list
 def fractWeight(course, keywords):
+    """ determines the fraction of course description words that were in the keyword list """
 	for word in keywords:
 		count += course.getDescription().count(word)
 	return count / len(course.getDescription())		
@@ -12,7 +12,8 @@ def applyAllWeights(allCourses, keywords):
 		crse.setWeight(fractWeight(crse, keywords))
 
 def maxValuedCourse(allCourses):
-	return max(allCourses, key=attrgetter('weight'))#returns course object with maximum weight parameter
+    """ returns course object with maximum weight parameter """
+	return max(allCourses, key=attrgetter('weight'))
 	
 def listDiff(listA, listB):
 	SB = set(listB)

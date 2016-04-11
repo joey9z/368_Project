@@ -12,9 +12,9 @@ class SemesterSched:
 		for item in crsesTaking:
 			self.addCourseTaking(item)
 		self.concurrentList = []
-		
-	#determines if a course is valid based on semester offered and prereqs and then adds it
+
 	def addCourseTaking(self, crse):
+        """ determines if a course is valid based on semester offered and prereqs and then adds it """
 		if(crse.isValid(self.season, self.coursesTaken)):
 			self.coursesTaking.append(crse)
 			self.semCreditTotal += crse.getCredits()
@@ -32,7 +32,7 @@ class SemesterSched:
 		return self.courses
 	
 	def isValid(self):
-		#check all courses valid
+		""" check all courses valid """
 		for crs in courses:
 			if(!crs.isValid(self.season, self.coursesTaken)):
 				return False
@@ -47,8 +47,8 @@ class SemesterSched:
 				return True
 		return False #default if none of concurrencies met.
 	
-	#determines next course to take
 	def nextCourse(self,allCourses):
+        """ determines next course to take """
 		#to be implemented. see word doc
 		#steps:
 		#find largest fraction weighted course remaining

@@ -56,5 +56,3 @@ class Schedule:
 			#Complementary electives
 		else
 			print("Invalid degree type attribute\n")
-		
-		

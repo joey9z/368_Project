@@ -25,8 +25,10 @@ BreadthReq = 3#implementation is the question, this one is fairly easy though
 
 def EERequired(crse):
 	temp = crse.getTitle()
-	if(temp.issubset(EECore) or temp.issubset(CompECore) or temp.issubset(ECESeminars) or (
+	if(temp.issubset(EECore) or temp.issubset(CompECore) or temp.issubset(ECESeminars) or ()):
+        pass
 
 def CompERequired(crse):
 	temp = crse.getTitle()
-	if(
+	if True:
+        pass

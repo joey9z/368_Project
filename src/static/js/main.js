@@ -2,12 +2,26 @@
 
 console.log("Hello, world!");
 
+
+/***********************************
+* initialize
+*
+* executes when the DOM is loaded
+* sets up event listeners
+************************************/
+
 function initialize() {
     let submit = document.querySelector("input[name=submit]");
     populateForms();
     
     submit.addEventListener("click", makeRequest, false);
 };
+
+/****************************************************
+* populateForms
+*
+* dynamically populates the form's select elements
+*****************************************************/
 
 function populateForms() {
     let semesters = document.querySelector("select[name=semesters]");
@@ -50,44 +64,73 @@ function populateForms() {
     }    
 }
 
+/****************************************
+* makeRequest
+*
+* submits a web request to /submit
+*****************************************/
+
 function makeRequest(e) {
-    e.preventDefault();
-    let form = document.querySelector("form");
-    form.parentNode.removeChild(form);
-    let formData = new FormData(form);
+    e.preventDefault();     // prevent form from submitting itself
+    let form = document.querySelector("form");      // find the form element
+    form.parentNode.removeChild(form);              // remove the form element
+    let formData = new FormData(form);              // encode the form's data
+    
+    // print the form data to the console
     
     console.log("#### Form Data ####\n");
     for (let entry of formData) {
         console.log(entry);
     }
     
+    // make the web request to /submit with the form data
+    
     let xhr = new XMLHttpRequest();
     xhr.open('POST', "/submit", true);
     xhr.send(formData);
+    
+    // listen for the response to the web request
 
     xhr.addEventListener("readystatechange", processData, false);
 }
+
+/****************************************
+* processData
+*
+* checks status of web request
+* acts upon received data
+*****************************************/
     
 function processData() {
     
+    // the request was successful
     if (this.readyState == 4 && this.status == 200)
     {
         console.log("We have data");
         
-        let data = JSON.parse(this.responseText);
-        makeSemesterTables(data.semesters);
+        let data = JSON.parse(this.responseText);   // convert the data to JavaScript Notation
+        console.log(data);
+        makeSemesterTables(data.semesters);     // generate tables to represent the semesters
     }
+    // the request was not successful
     else if (this.readyState == 4 && this.status != 200)
     {
-        console.log("Problemo!");
+        console.log("Problem!");
     }
-    
 }
 
+/****************************************
+* makeSemesterTables
+*
+* checks status of web request
+*****************************************/
+
 function makeSemesterTables(semesters) {
-    let main = document.querySelector("div.content");
+    let main = document.querySelector("div.content");   // find the main div
     
     for (let semester of semesters) {
+        // create a table element for each semester
+        
         let table = document.createElement("table");
         let row = document.createElement("tr");
         let header = document.createElement("th");
@@ -99,6 +142,8 @@ function makeSemesterTables(semesters) {
         table.appendChild(row);
         main.appendChild(table);
         
+        // create a row in the semester's table for each course
+        
         for (let course of semester.courses) {
             let row = document.createElement("tr");
             let col = document.createElement("td");
@@ -109,4 +154,7 @@ function makeSemesterTables(semesters) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", initialize);  // run the initialize function when the DOM is ready
+
+// run the initialize function when the DOM is ready
+
+document.addEventListener("DOMContentLoaded", initialize);
