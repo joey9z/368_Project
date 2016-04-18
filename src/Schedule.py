@@ -4,6 +4,21 @@ class Schedule:
 		for item in semList:
 			self.semesters.append(item)
 		self.attribute = attribute #EE or CompE
+		self.coreCreds = 0
+		self.seminarCreds = 0
+		self.ECEAdvECECreds = 0
+		
+		self.ECEElCreds = 0
+		self.senDesCreds = 0
+		self.firstYrEngCreds = 0
+		self.mathCreds = 0
+		self.scienceCreds = 0
+		self.genEdTotCreds = 0
+		self.totECECreds = 0
+		self.engBreadthCreds = 0
+		#okay, so it is nearly impossible to determine which gen eds, as well as apply attributes to all courses...
+		
+		
 		
 		
 	
@@ -41,5 +56,3 @@ class Schedule:
 			#Complementary electives
 		else
 			print("Invalid degree type attribute\n")
-		
-		

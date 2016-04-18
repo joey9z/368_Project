@@ -1,6 +1,8 @@
 import re
-# not gonna lie, this is pretty much magic
+
+# not gonna lie, this is pretty much magic (recursion)
 # returns a list (ish-its a generator) that contains all the different combinations of classes that are valid pre-reqs for the class
+
 def makeAndLists(prereqs, depth, current):
 	if(depth == len(prereqs)):
 		x = []
@@ -14,6 +16,13 @@ def makeAndLists(prereqs, depth, current):
 			for val in makeAndLists(prereqs, depth + 1, current + [j]):
 				yield val
 
+#########################
+##
+## TODO: Fails on ABE 45000
+## See: http://localhost:{port}/raw?dept=ABE&course=45000
+## And: http://localhost:{port}/api?dept=ABE&course=45000
+##
+########################
 
 def pullParen(stack):
 	resL = []
@@ -23,22 +32,29 @@ def pullParen(stack):
 	resL.append(first)
 	assert(first != "&" and first != "|")
 	group = stack.pop()
-	assert(group == "&" or group == "|")
-
-	while stack[len(stack) - 1] != "(":
-		i = stack.pop()
-		if i != group:
-			if group == "&":
-				assert(i != "|")
-				resS+=(i+" ")
-			else:
-				assert(i != "&")
-				resL.append(i)
+	# so this assert fails, i guess we do have to deal with it
+	# assert(group == "&" or group == "|")
+	if group == "&" or group == "|":	
+		while stack[len(stack) - 1] != "(":
+			i = stack.pop()
+			if i != group:
+				if group == "&":
+					assert(i != "|")
+					resS+=(i+" ")
+				elif group == "|":
+					assert(i != "&")
+					resL.append(i)
+				elif group == "(":
+					resS+=(i+" ")
+	else:
+		stack.append(first)
+		return(stack)
 
 	stack.pop()
 	result = resS if group == "&" else resL
 	stack.append(result)
 	return(stack)
+
 				
 def parse2(text):
 	text = text.replace("\n", " ").strip()
@@ -55,7 +71,6 @@ def parse2(text):
 	return [i.split("and") for i in Ors]
 
 
-
 def parseprereq(text):
 	if text.find("General Requirements") != -1:	
 		return parse2(text)
@@ -68,17 +83,13 @@ def parseprereq(text):
 	text = text.replace("and", "&")
 	text = text.replace("or", "|")
 	list1 = text.strip().split()
-	#list1 = re.split("\(|\)|\||&",text.strip())
-	#print list1
-	#print "\n\n"
 
+	#print(list1)
 	# fun with stacks
 	stack = []
 	while list1 != []:
-
+	#	print(stack)
 		i = list1.pop(0)
-		#print i
-		# print "\n\n"
 		if i == "(":
 			stack.append(i)
 		elif i == ")":
@@ -89,8 +100,6 @@ def parseprereq(text):
 			stack.append(i)
 		else:
 			stack.append(i + list1.pop(0))
-	#print stack
-	#print "\n\n"
 	# Check for ambigious prereq (and and ors togther) this is a problem, ECE321 is an example
 	# not much we can do about that.
 	# also, some courses reference non-existant or outdated information. (EE255, ECE 46200)
@@ -99,7 +108,6 @@ def parseprereq(text):
 		print "Sigh..."
 		return []
 
-	
 	if "&" in stack:
 		for i in stack:
 			if not isinstance(i,basestring):
@@ -114,11 +122,4 @@ def parseprereq(text):
 					OrList.append([j])
 			elif i != "|":
 				OrList.append([i]) 
-		return OrList																																																																																																																											
-#test = "(Undergraduate level MA 16600 Minimum Grade of C- or Undergraduate level MA 16200 Minimum Grade of C-) and (Undergraduate level ENGR 13100 Minimum Grade of D- or Undergraduate level ENGR 14100 Minimum Grade of D- or Undergraduate level ENGR 13300 Minimum Grade of D-) and (Undergraduate level PHYS 17200 Minimum Grade of D- or Undergraduate level PHYS 15200 Minimum Grade of D-) and (Undergraduate level MA 26100 Minimum Grade of D- [may be taken concurrently] or Undergraduate level MA 17400 Minimum Grade of D- [may be taken concurrently] or Undergraduate level MA 18200 Minimum Grade of D- [may be taken concurrently] or Undergraduate level MA 27100 Minimum Grade of D- [may be taken concurrently])"
-#test2 = "(Undergraduate level  PHYS 17200 Minimum Grade of D- or Undergraduate level  PHYS 15200 Minimum Grade of D- or (Undergraduate level  PHYS 16200 Minimum Grade of D- and Undergraduate level  PHYS 16300 Minimum Grade of D-)   ) and (Undergraduate level  MA 16200 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 17100 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 17300 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 16900 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 16600 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MATH 16400 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MATH M2160 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 18100 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MA 16400 Minimum Grade of D- [may be taken concurrently] or Undergraduate level  MATH 16600 Minimum Grade of D- [may be taken concurrently])"
-#lists = parseprereq(test)
-#lists = []
-#for i in lists:
-#	print i
-#	print "\n"
+		return OrList

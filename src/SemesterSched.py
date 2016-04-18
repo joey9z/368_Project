@@ -1,3 +1,5 @@
+import dankMath.py
+
 class SemesterSched:
 	def __init__(self, season, year, completedCoursesList, crsesTaking):
 		self.season = season
@@ -9,9 +11,10 @@ class SemesterSched:
 		self.semCreditTotal = 0
 		for item in crsesTaking:
 			self.addCourseTaking(item)
-		
-	#determines if a course is valid based on semester offered and prereqs and then adds it
+		self.concurrentList = []
+
 	def addCourseTaking(self, crse):
+        """ determines if a course is valid based on semester offered and prereqs and then adds it """
 		if(crse.isValid(self.season, self.coursesTaken)):
 			self.coursesTaking.append(crse)
 			self.semCreditTotal += crse.getCredits()
@@ -29,10 +32,33 @@ class SemesterSched:
 		return self.courses
 	
 	def isValid(self):
-		#check all courses valid
+		""" check all courses valid """
 		for crs in courses:
 			if(!crs.isValid(self.season, self.coursesTaken)):
 				return False
 		if(self.semCreditTotal < 12):
 			return False
 		return True #returns true if no courses were invalid
+
+		
+	def concurrencyMet(self):
+		for thing in concurrentList[schedIndex][:][:]:
+			if((thing.intersection(set()) != set()) && set(self.coursesTaking).issuperset(set(thing))):
+				return True
+		return False #default if none of concurrencies met.
+	
+	def nextCourse(self,allCourses):
+        """ determines next course to take """
+		#to be implemented. see word doc
+		#steps:
+		#find largest fraction weighted course remaining
+		#this assumes weights have been applied at the beginning of the program.
+		validSubset = listDiff(allCourses, self.coursesTaken)
+		crse = maxValuedCourse(validSubset)#this should copy an object... do I need to worry about this?
+		crse.getDeepestPre(coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
+		
+	
+	def fixAndReplace(self):#to be implemented
+	
+		
+		
