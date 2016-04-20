@@ -63,7 +63,7 @@
                 <div class="form-group">
                     <label>Starting Semester</label>
                     <select name="start_sem">
-                        <option value="Fall">Fall</option>
+                        <option selected value="Fall">Fall</option>
                         <option value="Spring">Spring</option>
                     </select>
 
@@ -76,7 +76,7 @@
 
                     <select name="grad_sem">
                         <option value="Fall">Fall</option>
-                        <option value="Spring">Spring</option>
+                        <option selected value="Spring">Spring</option>
                     </select>
 
                     <select name="grad_year">
@@ -99,18 +99,19 @@
                     </select>
                 </div>
 
-                <div>
-                    <label for="action">Semesters On Campus</label>
-                    <select id="s" multiple name="semesters">
-                    </select>
-
-                    <a href="#" onclick="listbox_moveacross('s', 'd')">&gt;&gt;</a>
-                    <br/>
-                    <a href="#" onclick="listbox_moveacross('d', 's')">&lt;&lt;</a>
-                    <label for="action"> Semesters Off Campus </label>
-
-                    <select id="d" name="not_semesters" multiple>
-                    </select>
+                <div class="form-group row">
+                    <div class="span3">
+                        <label>Semesters On Campus</label>
+                        <select id="s" name="semesters" class="form-control" multiple></select>
+                    </div>
+                    <div class="span2 btns">
+                        <input type="button" class="btn" onclick="listbox_moveacross('d', 's')" value="&lt;&lt;">
+                        <input type="button" class="btn" onclick="listbox_moveacross('s', 'd')" value="&gt;&gt;">
+                    </div>
+                    <div class="span3">
+                        <label> Semesters Off Campus </label>
+                        <select id="d" name="not_semesters" class="form-control" multiple></select>
+                    </div>
                 </div>
 
                 <!--<div class="form-group">
@@ -136,9 +137,15 @@
 
                 </div>-->
 
-                <div class="form-group">
-                    <label>Courses Taken</label>
-                    <textarea name="courses_taken" class="form-control"></textarea>
+                <div class="form-group row">
+                    <div class="span3">
+                        <label>Courses Taken</label>
+                        <textarea name="courses_taken" class="form-control"></textarea>
+                    </div>
+                    <div class="span3 offset2">
+                        <label>Course Interest Keywords</label>
+                        <textarea name="keywords" class="form-control"></textarea>
+                    </div>
                 </div>
 
                 <input type="submit" name="submit" class="btn btn-primary" value="Submit">

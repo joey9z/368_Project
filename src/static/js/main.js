@@ -25,9 +25,13 @@ function initialize() {
 
 function populateForms() {
     let semesters = document.querySelector("select[name=semesters]");
+    let not_semesters = document.querySelector("select[name=not_semesters]");
     let grad_year = document.querySelector("select[name=grad_year]");
     let start_year = document.querySelector("select[name=start_year]");
     let courses_taken = document.querySelector("textarea[name=courses_taken]");
+    
+    const default_start = 2013;
+    const default_grad = 2017;
     
     let sem_names = ["Fall", "Spring", "Summer"];
     let sems = [10, 20, 30];
@@ -37,24 +41,27 @@ function populateForms() {
     
     for (let year = curr_year; year < curr_year + 5; year++)
     {
+        // populate semester select elements
         for (let i = 0; i < sems.length; i++)
         {
             let option = document.createElement("option");
             option.value = year+''+sems[i];
             option.text = sem_names[i] + " " + year;
-            (sems[i]==30) && (option.selected = "true");
-            semesters.appendChild(option);
+            sems[i]==30 ? not_semesters.appendChild(option) : semesters.appendChild(option);
         }
         
+        // populate grad year elements
         let option = document.createElement("option");
         option.value = year;
         option.text = year;
+        if (year == default_grad) option.selected=true;
         grad_year.appendChild(option);
         
+        // populate start year elements
         option = document.createElement("option");
         option.value = year-5;
         option.text = year-5;
-        grad_year.appendChild(option);
+        if (year-5 == default_start) option.selected=true;
         start_year.appendChild(option);
     }
     
@@ -73,6 +80,14 @@ function populateForms() {
 
 function makeRequest(e) {
     e.preventDefault();     // prevent form from submitting itself
+    let semesters = document.querySelector("select[name=semesters]");
+    
+    // select all the elements in "semesters on campus" when submitted
+    for (let i = 0; i < semesters.length; i++)
+    {
+        semesters.children[i].selected = true;
+    }
+    
     let form = document.querySelector("form");      // find the form element
     form.parentNode.removeChild(form);              // remove the form element
     let formData = new FormData(form);              // encode the form's data
@@ -176,9 +191,9 @@ function listbox_move(listID, direction) {
     listbox.options[selIndex + increment].value = selValue;
     listbox.options[selIndex + increment].text = selText;
     listbox.selectedIndex = selIndex + increment;
-    }
+}
 
-    function listbox_moveacross(sourceID, destID) {
+function listbox_moveacross(sourceID, destID) {
     var src = document.getElementById(sourceID);
     var dest = document.getElementById(destID);
     for (var count = 0; count < src.options.length; count++) {
@@ -187,7 +202,7 @@ function listbox_move(listID, direction) {
             var newOption = document.createElement("option");
             newOption.value = option.value;
             newOption.text = option.text;
-            newOption.selected = true;
+            //newOption.selected = true;
             try {
                 dest.add(newOption, null);
                 src.remove(count, null);
@@ -198,14 +213,14 @@ function listbox_move(listID, direction) {
             count--;
         }
     }
-    }
+}
 
-    function listbox_selectall(listID, isSelect) {
+function listbox_selectall(listID, isSelect) {
     var listbox = document.getElementById(listID);
     for (var count = 0; count < listbox.options.length; count++) {
         listbox.options[count].selected = isSelect;
     }
-    }                
+}                
 
 
 // run the initialize function when the DOM is ready
