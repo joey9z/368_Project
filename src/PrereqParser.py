@@ -16,18 +16,14 @@ def makeAndLists(prereqs, depth, current):
 			for val in makeAndLists(prereqs, depth + 1, current + [j]):
 				yield val
 
-#########################
-##
-## TODO: Fails on ABE 45000
-## See: http://localhost:{port}/raw?dept=ABE&course=45000
-## And: http://localhost:{port}/api?dept=ABE&course=45000
-##
-########################
+
 
 def pullParen(stack):
 	resL = []
 	resS = ""
 	first = stack.pop()
+	if isinstance(first,list):
+		first = first[0]
 	resS+=(first + " ")
 	resL.append(first)
 	assert(first != "&" and first != "|")
@@ -76,19 +72,24 @@ def parseprereq(text):
 		return parse2(text)
 	# remove unneeded text, make parsing easier
 	text = text.replace("Undergraduate level", "")
+ 
+
 	text = text.replace("Minimum Grade of C-", "")
 	text = text.replace("Minimum Grade of C", "")
 	text = text.replace("Minimum Grade of D-", "")
 	text = text.replace("  [may be taken concurrently]", "-C ")
 	text = text.replace("and", "&")
 	text = text.replace("or", "|")
+	if text.find("ALEKS") != -1:
+		text = text.replace(" |  ALEKS Math Assessment 085","")
+		text = text.replace("ALEKS Math Assessment 085","")
+		#text = text.strip("(")
+		#text = text.strip(")")
 	list1 = text.strip().split()
 
-	#print(list1)
 	# fun with stacks
 	stack = []
 	while list1 != []:
-	#	print(stack)
 		i = list1.pop(0)
 		if i == "(":
 			stack.append(i)
@@ -101,12 +102,13 @@ def parseprereq(text):
 		else:
 			stack.append(i + list1.pop(0))
 	# Check for ambigious prereq (and and ors togther) this is a problem, ECE321 is an example
-	# not much we can do about that.
-	# also, some courses reference non-existant or outdated information. (EE255, ECE 46200)
+	# not much we can do about that, but we have to do something, so just split on the or, only take half
+	# also, some courses reference non-existant or outdated information. (EE255, ECE 46200)...
 	OrList= []
+	print stack
 	if "|" in stack and "&" in stack:
 		print "Sigh..."
-		return []
+		stack = stack[:stack.index("|")]
 
 	if "&" in stack:
 		for i in stack:
@@ -119,7 +121,12 @@ def parseprereq(text):
 		for i in stack:
 			if not isinstance(i,basestring):
 				for j in i:
-					OrList.append([j])
+					if not isinstance(j,basestring):
+						for k in j:
+							OrList.append([k])
+					else:
+						OrList.append([j])
 			elif i != "|":
-				OrList.append([i]) 
+				OrList.append([i])
+		print OrList 
 		return OrList
