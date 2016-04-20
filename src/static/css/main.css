@@ -6,10 +6,15 @@ form label
 form textarea
 {
     height: 100px;
-    
 }
 
 form select[multiple]
 {
     height: 150px;
+}
+
+div.btns {
+    margin-top: 50px;
+    text-align: center;
+    
 }
