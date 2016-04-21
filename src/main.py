@@ -71,8 +71,13 @@ class AdminHandler(webapp2.RequestHandler):
     def get(self):
         courses = update_db()
         
+        ece_start = courses.index("ECE 15200")
+        ece_end = courses.index("ECE I4940")
+        
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write("Welcome to the Admin Handler\n")
+        self.response.write("ECE courses start at {start}\n".format(start=ece_start))
+        self.response.write("ECE courses end at {end}\n".format(end=ece_end))
         self.response.write("There are {num} courses\n".format(num=len(courses)))
         self.response.write(courses)
         
@@ -86,17 +91,17 @@ def update_db():
     with open("purdue_catalog.html") as data:
         data = data.read()
 
-        m = re.findall("detail\?cat_term_in=\d{6}\&subj_code_in\=\w+&crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", data)
+        m = re.findall("detail\?cat_term_in=\d{6}&amp;subj_code_in\=\w+&amp;crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", data)
         courses = m if m else "nomatch"
         
         # TODO: pre-req parser asseertion fails on 
 #         insert each course into the database
 #         course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
 #         See Zool Z1030
-#        for course in courses:
-#            [dept, course] = course.split(" ")
-#            text = get_course(dept, course)
-#            insert_course(dept, course, text)
+        for course in courses[0:100]:
+            [dept, course] = course.split(" ")
+            text = get_course(dept, course)
+            insert_course(dept, course, text)
 
         return courses
 
@@ -127,10 +132,12 @@ def insert_course(dept, num, text):
     m = re.search("\.\s(.*)\sTypically",text)
     des = m.group(1) if m else "nomatch"
 
-    # TODO: Credit hours aren't fixed for every course
+    # Credit hours aren't fixed for every course
+    # Credit Hours: 2.00
     # Credit Hours: 2.00 or 3.00. 
     # Credit Hours: 1.00 to 18.00. 
-    m = re.search("Credit Hours: (\d\.\d\d)",text)
+    m = re.search("Credit Hours: (\d+\.\d+)",text, flags=re.IGNORECASE)
+    m = re.search("(\d+\.\d+)(.*?)Credit hours",text, flags=re.IGNORECASE) if not m else m
     cr = m.group(1) if m else "-1"
 
     # Semesters Offered
@@ -141,11 +148,13 @@ def insert_course(dept, num, text):
     m = re.search("Schedule Types:\s((?:[\w ]+)(?:,[\w ]+)*) \s+", text)
     form = m.group(1).split(", ") if m else ["nomatch"]
 
-    # TODO: campus parsing fails on ECE 302
-    m = re.search("campuses:\s*(.*)Learn", text,flags=re.DOTALL)
+    # Learning objectives will not necessarily follow campuses
+    m = re.search("campuses:(\s+([\w\s])+\n)", text)
     campus = m.group(1).strip().split("\n\n") if m else ["nomatch"]
+    campus = [camp.strip() for camp in campus]
 
     # prereq regex and decomosition of prereqs into lists of AND conditions (works for most classes, not 477 and similar)
+    # re.DOTALL matches all characters, including "\n"
     m = re.search("Prerequisites:(.*)",text,flags=re.DOTALL)
     if m:
         allReqs = []
@@ -169,7 +178,7 @@ def insert_course(dept, num, text):
         allReqs = []
 
     # create course entity
-    course = Course(number=int(num), title=title, department=dept, form=form,
+    course = Course(number=num, title=title, department=dept, form=form,
                      description=des, credits=float(cr), semesters=sem,
                      campuses=campus,requisites=allReqs, id=dept + num)
     # store course 
