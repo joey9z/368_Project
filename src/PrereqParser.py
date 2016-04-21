@@ -77,11 +77,13 @@ def parseprereq(text):
 	text = text.replace("Minimum Grade of C-", "")
 	text = text.replace("Minimum Grade of C", "")
 	text = text.replace("Minimum Grade of D-", "")
+	text = text.replace("Minimum Grade of D", "")
 	text = text.replace("  [may be taken concurrently]", "-C ")
 	text = text.replace("and", "&")
 	text = text.replace("or", "|")
 	if text.find("ALEKS") != -1:
 		text = text.replace(" |  ALEKS Math Assessment 085","")
+		text = text.replace(" |  ALEKS Math Assessment 075","")
 		text = text.replace("ALEKS Math Assessment 085","")
 		#text = text.strip("(")
 		#text = text.strip(")")
