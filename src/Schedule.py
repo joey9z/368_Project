@@ -13,14 +13,15 @@ class Schedule:
 		
 	def generateSched(self):
 		pushL = []#carry-over list of courses
+		accCourses = []#continues generating the updated courses taken
 		for sem in self.semesters:
+			sem.addCoursesTaken(accCourses)
 			pushL = sem.generateSem(pushL)#generates sem and updates the pushList.
+			accCourses += sem.getCoursesTaking()
 			
-	def patchNotMetReqs(self, crsesLacking):
-		
-		
 	
 	def isValid(self):
+	"""checks AND (apparently) corrects schedule"""
 		crsesLacking = []
 		allCrsTaking = []
 		for sem in self.semesters:
@@ -32,23 +33,26 @@ class Schedule:
 		if(self.attribute == "EE"):
 			#core
 			"""need to get EECORE and other string lists converted to object lists for subtraction"""
-			crsesLacking += listDiff(EECore, allCrsTaking)#sets only have titles of courses, need to translate
+			recObjList = []
+			recObjLL = []
+			req = EECore+ECESeminars+ECESenDes#combine for efficiency and readibility
+			for str in req:
+				for C in allCourses:
+					if(str == C.getTitle()):
+						recObjList.append(C)
+			
+			cnt = 0
+			for L in ECEAdvEESel:
+				recObjLL.append([])
+				for strng in L:
+					for cs in allCourses:
+						if(strng == cs.getTitle()):
+							recObjLL[cnt].append(cs)#finish later
+				cnt+=1
+				
+			crsesLacking += listDiff(recObjList, allCrsTaking)#sets only have titles of courses, need to translate
 			#seminars(200 and 400)
-			crsesLacking += listDiff(ECESeminars, allCrsTaking)
-			#advanced selectives(>9 hours)
-			crsesLacking += minDiff(allCrsTaking, ECEAdvEESel)
-			#Senior design(49595 or 477 or both EPCS411 and 412 over consec sems
-			crsesLacking += listDiff(ECESenDes, allCrsTaking)
-			#ECE Electives(3 300 level or above labs, and other courses)(>7 hrs at least)
-			#No.
-			#total ECE creds >= 47, note, only 6 credits allowed of "special content courses"
-			#Forget it... only reasonable thing to add is research at this point. Too much...thinking...
-			#general engineering
-			#-7 first yr, -3 breadth req
-			#math
-			#science
-			#ugh, gen eds-dont forget foundational outcome
-			#complementary electives
+			crsesLacking += minDiff(allCrsTaking, recObjLL)
 			
 			#then check if each semesterSched was valid
 			for lack in crsesLacking:
@@ -57,17 +61,30 @@ class Schedule:
 			
 		elif(self.attribute == "CompE"):
 			#Core
+			recObjList = []
+			recObjLL = []
+			req = CompECore+ECESeminars+ECESenDes#combine for efficiency and readibility
+			for str in req:
+				for C in allCourses:
+					if(str == C.getTitle()):
+						recObjList.append(C)
+			
+			cnt = 0
+			for L in ECEAdvCompE:
+				recObjLL.append([])
+				for strng in L:
+					for cs in allCourses:
+						if(strng == cs.getTitle()):
+							recObjLL[cnt].append(cs)#finish later
+				cnt+=1
+				
+			crsesLacking += listDiff(recObjList, allCrsTaking)#sets only have titles of courses, need to translate
 			#seminars(200 and 400)
-			#Advanced cmpE requirement(437 + 468 or 469)
-			#Senior Design 49595 or 477 or both EPCS411 and EPCS412 over consec sems
-			#CmpE electives >2 credits used to bring total to 49
-			#general engineering
-			#-7 first year, -3 breadth req
-			#math, calc1 calc2 calc3,linear,diffEq, AND ECE369
-			#or calc1 calc2 calc3 MA262 ECE369, and one advanced math selective
-			#science
-			#Gen eds
-			#Complementary electives
+			crsesLacking += minDiff(allCrsTaking, recObjLL)
+			
+			#then check if each semesterSched was valid
+			for lack in crsesLacking:
+				replace(lack)#replaces last needed courses
 		else
 			print("Invalid degree type attribute\n")
 	
