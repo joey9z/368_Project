@@ -17,6 +17,12 @@ def makeAndLists(prereqs, depth, current):
 				yield val
 
 
+def applyAnd(opr1,opr2):
+	pass
+
+def applyOr(opr1,opr2):
+	return opr1 + opr2
+
 
 def pullParen(stack):
 	resL = []
@@ -98,8 +104,18 @@ def parseprereq(text):
 		elif i == ")":
 			stack = pullParen(stack)
 		elif i == "|":
+			while len(stack) > 3 and stack[len(stack) -2] == "&":
+				a = stack.pop()
+				stack.pop()
+				b = stack.pop()
+				stack.append(applyAnd(a,b))
 			stack.append(i)
 		elif i == "&":
+			while len(stack) > 3 and stack[len(stack) -2] == "&":
+				a = stack.pop()
+				stack.pop()
+				b = stack.pop()
+				stack.append(applyAnd(a,b))
 			stack.append(i)
 		else:
 			stack.append(i + list1.pop(0))
