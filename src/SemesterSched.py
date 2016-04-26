@@ -23,6 +23,9 @@ class SemesterSched:
 			print('could not add course: {0} to semester: {1} {2}'.format(crse.getTitle(),self.season, self.year))
 			return False
 	
+	def addCoursesTaken(self, crsList):
+		self.coursesTaken += crsList
+		
 	def unconditionalAddCourse(self, crse):
 		self.coursesTaking.append(crse)
 		self.semCreditTotal += crse.getCredits()
@@ -83,7 +86,7 @@ class SemesterSched:
 		if(sum(conNotMet) == 1):
 			self.unconditionalAddCourse(nextCourse(allCourses,schedInd))#first patch for concurrency
 			schedInd+=1
-			if(!self.concurrencyMet()):#change the function concMet to rereqs sat somehow
+			if(not self.concurrencyMet()):#change the function concMet to rereqs sat somehow
 				conNotMet.append(1)
 			else:
 				conMet.append(0)#use pop
