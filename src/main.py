@@ -155,25 +155,22 @@ def insert_course(dept, num, text):
 
     # prereq regex and decomosition of prereqs into lists of AND conditions (works for most classes, not 477 and similar)
     # re.DOTALL matches all characters, including "\n"
-    m = re.search("Prerequisites:(.*)",text,flags=re.DOTALL)
+    idx = text.find("campuses:")
+    m = re.search("Prerequisites:(.*)",text[idx:],flags=re.DOTALL)
     if m:
         allReqs = []
         prereqText = m.group(1).strip()
         prereqText =  prereqText.encode('ascii', 'ignore') 
         for i in PrereqParser.parseprereq(prereqText):
             reqArr = []
-            for j in i:
-                if j.find(" ") != -1:
-                    i.remove(j)
-                    for k in j.strip().split():
-                        i.append(k)
-            for j in i:
+            for j in i.split():
                 if j.find("-C") != -1:
                     j = j.replace("-C","")
                     reqArr.append(Requisite(course=j,reqType=False))
                 else:
-                    reqArr.append(Requisite(course=j,reqType=True))
+                    reqArr.append(Requisite(course=j,reqType=True))                    
             allReqs.append(RequisiteList(courses=reqArr))
+
     else:
         allReqs = []
 
