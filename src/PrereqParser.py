@@ -77,6 +77,7 @@ def parseprereq(text):
 	text = text.replace("Minimum Grade of C", "")
 	text = text.replace("Minimum Grade of D-", "")
 	text = text.replace("Minimum Grade of D", "")
+	text = text.replace("Minimum Grade of S", "")
 	text = text.replace("  [may be taken concurrently]", "-C ")
 	text = text.replace("and", "&")
 	text = text.replace("or", "|")
