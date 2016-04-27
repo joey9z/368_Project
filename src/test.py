@@ -4,16 +4,13 @@ from Course2 import Course2
 import DankMath
 
 c = Course2("ECE20000",[],"Some lame Course",0,1.0,["Fall","Spring"])
-a = SemesterSched("Fall",2016,[],[],[c])
-#a.generateSem([])
+e = Course2("ECE20001",[],"Some lame Course",0,1.0,["Fall","Spring"])
+a = SemesterSched("Fall",2016,[],[],[c,e])
+a.generateSem([])
 
 d = Course2("ECE20000",[],"Some lame Course",0,1.0,["Fall","Spring"])
-e = Course2("ECE20001",[],"Some lame Course",0,1.0,["Fall","Spring"])
-y = [i.title for i in [c]]
-print y
-z = [i.title for i in [d,e]]
-print z
-x = DankMath.listDiff([c],[d,e])
+
+x = DankMath.listDiff([c,e],[d])
 print x[0].title
 
 

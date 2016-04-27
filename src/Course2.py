@@ -81,18 +81,22 @@ class Course2:
 		concurrencyFlag = 1
 		i = 0
 		j = 0
+
 		for prereqL in self.prereqListList:
 			prereqSet = set(prereqL)
 			
 			concurrencyFlag = 0
 			concurrentList[schedIndex].append([])#for each list of prereqs, initalize a new list
-			if(prereqL in compCrseList):
+			TakenCrseNames= [j.getTitle() for j in compCrseList]
+			unFufilledPrereqs = [i for i in prereqL if i.course not in TakenCrseNames] 
+			if(unFufilledPrereqs == []): 
 				#satisfied = 1#wait, just return True...
 				return 1#only need to satisfy one set, so it is okay to return
 			else:#add to concurrency list for semester
-				for item in DankMath.listDiff(prereqL, compCrseList):
-					if(item.hasConcurrentFlag):#if not all items have concurrent flag ASK ABOUT THIS SYNTAX for HASCONCURRENT FLAG
-						concurrentList[schedIndex][i].append(item), #possibly useful, not necessary
+
+				for item in unFufilledPrereqs: 
+					if(not item.reqType):#if not all items have concurrent flag ASK ABOUT THIS SYNTAX for HASCONCURRENT FLAG
+						# concurrentList[schedIndex][i].append(item), #possibly useful, not necessary -- not necessary, not used
 						concurrencyFlag = 1
 					#add a current semester concurrency list
 					#concurrentList is a list of a list of a list... first level tells which course in schedule the sublist levels deal with
@@ -112,7 +116,7 @@ class Course2:
 	
 	def isValid(self, seasonSem, crsList):
 		""" determines if the course is valid """
-		if(crse.isOfferedSem(seasonSem) and crse.prereqsSatisfied(crsList)):
+		if(crse.isOfferedSem(seasonSem) and crse.prereqsSatisfied(crsList,[],0)):
 			return True
 		else:
 			return False

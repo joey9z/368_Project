@@ -19,8 +19,14 @@ def maxValuedCourse(allCourses):
 def listDiff(listA, listB):
 	"""listA - listB, return result is a list note that this is not the same as listB - listA"""
 	SB = set([i.getTitle() for i in listB])
-	return [starfish for starfish in listA if starfish.getTitle() not in SB]
-	
+	res = []
+	if(len(listA) > 0):
+		if isinstance(listA[0],basestring):
+			res = [starfish for starfish in listA if starfish not in SB]
+		else:
+			res = [starfish for starfish in listA if starfish.getTitle() not in SB]
+	return res 
+
 def setDiffOfLists(listA, listB):
 	"""listA - listB, return result is a set note that this is not the same as listB - listA"""
 	return set(listA) - set(listB)
