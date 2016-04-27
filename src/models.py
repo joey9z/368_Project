@@ -31,7 +31,7 @@ class Course(ndb.Model):
     title = ndb.StringProperty()        # unicode string up to 1500 bytes
     description = ndb.TextProperty()    # unicode string of unlimited length
     form = ndb.StringProperty(repeated=True)        # unicode string up to 1500 bytes
-    number = ndb.IntegerProperty()      # 64-bit signed integer      
+    number = ndb.StringProperty()      # 64-bit signed integer      
     credits = ndb.FloatProperty()		# float because some classes have half credits (source: I got 3.5 credits for ENGR 141/2)
     department = ndb.StringProperty()
     semesters = ndb.StringProperty(repeated=True)

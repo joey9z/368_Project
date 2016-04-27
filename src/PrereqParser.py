@@ -16,43 +16,38 @@ def makeAndLists(prereqs, depth, current):
 			for val in makeAndLists(prereqs, depth + 1, current + [j]):
 				yield val
 
-#########################
-##
-## TODO: Fails on ABE 45000
-## See: http://localhost:{port}/raw?dept=ABE&course=45000
-## And: http://localhost:{port}/api?dept=ABE&course=45000
-##
-########################
+
+def applyAnd(opr1,opr2):
+	res = [x for x in makeAndLists([opr1] + [opr2],0,[])]
+	res2 = []
+	for x in res:
+		a = ""
+		for y in x:
+			a = a + " " + y
+		res2.append(a.strip())
+	return res2
+
+def applyOr(opr1,opr2):
+	return opr1 + opr2
+
 
 def pullParen(stack):
-	resL = []
-	resS = ""
-	first = stack.pop()
-	resS+=(first + " ")
-	resL.append(first)
-	assert(first != "&" and first != "|")
-	group = stack.pop()
-	# so this assert fails, i guess we do have to deal with it
-	# assert(group == "&" or group == "|")
-	if group == "&" or group == "|":	
-		while stack[len(stack) - 1] != "(":
-			i = stack.pop()
-			if i != group:
-				if group == "&":
-					assert(i != "|")
-					resS+=(i+" ")
-				elif group == "|":
-					assert(i != "&")
-					resL.append(i)
-				elif group == "(":
-					resS+=(i+" ")
-	else:
-		stack.append(first)
-		return(stack)
+	while stack[len(stack) - 2] != "(":
+		a = stack.pop()
+		op = stack.pop()
+		b = stack.pop()
+		if op == "|":
+			stack.append(applyOr(a,b))
+		elif op == "&":
+			stack.append(applyAnd(a,b))
+		else:
+			print "uh-oh\n"
+			print(op)	
+			print("\n")
 
+	res = stack.pop()
 	stack.pop()
-	result = resS if group == "&" else resL
-	stack.append(result)
+	stack.append(res)
 	return(stack)
 
 				
@@ -66,9 +61,9 @@ def parse2(text):
 	text = text.replace("(","")
 	text = text.replace(")","")
 	text = text.replace(" ", "")
-	print text
+	text = text.replace("and", " ")
 	Ors = text.split("or")
-	return [i.split("and") for i in Ors]
+	return Ors
 
 
 def parseprereq(text):
@@ -76,50 +71,65 @@ def parseprereq(text):
 		return parse2(text)
 	# remove unneeded text, make parsing easier
 	text = text.replace("Undergraduate level", "")
+ 
+
 	text = text.replace("Minimum Grade of C-", "")
 	text = text.replace("Minimum Grade of C", "")
 	text = text.replace("Minimum Grade of D-", "")
+	text = text.replace("Minimum Grade of D", "")
+	text = text.replace("Minimum Grade of S", "")
 	text = text.replace("  [may be taken concurrently]", "-C ")
 	text = text.replace("and", "&")
 	text = text.replace("or", "|")
+	if text.find("ALEKS") != -1:
+		text = text.replace(" |  ALEKS Math Assessment 085","")
+		text = text.replace(" |  ALEKS Math Assessment 075","")
+		text = text.replace("ALEKS Math Assessment 085","")
+		#text = text.strip("(")
+		#text = text.strip(")")
 	list1 = text.strip().split()
-
-	#print(list1)
+	#print list1
 	# fun with stacks
 	stack = []
 	while list1 != []:
-	#	print(stack)
 		i = list1.pop(0)
 		if i == "(":
 			stack.append(i)
 		elif i == ")":
 			stack = pullParen(stack)
 		elif i == "|":
+			while len(stack) >= 3 and stack[len(stack) -2] == "&":
+				a = stack.pop()
+				stack.pop()
+				b = stack.pop()
+				stack.append(applyAnd(a,b))
 			stack.append(i)
 		elif i == "&":
+			while len(stack) >= 3 and stack[len(stack) -2] == "&":
+				a = stack.pop()
+				stack.pop()
+				b = stack.pop()
+				stack.append(applyAnd(a,b))
 			stack.append(i)
 		else:
-			stack.append(i + list1.pop(0))
-	# Check for ambigious prereq (and and ors togther) this is a problem, ECE321 is an example
-	# not much we can do about that.
-	# also, some courses reference non-existant or outdated information. (EE255, ECE 46200)
-	OrList= []
-	if "|" in stack and "&" in stack:
-		print "Sigh..."
+			stack.append([i + list1.pop(0)])
+	# some courses reference non-existant or outdated information. (EE255, ECE 46200)...
+	#print stack
+	while len(stack) > 2:
+		a = stack.pop()
+		op = stack.pop()
+		b = stack.pop()
+		if op == "|":
+			stack.append(applyOr(a,b))
+		elif op == "&":
+			stack.append(applyAnd(a,b))
+		else:
+			print "uh-oh\n"
+			print(op)	
+			print("\n")	
+	#print stack
+	if len(stack) < 1:
 		return []
-
-	if "&" in stack:
-		for i in stack:
-			if not isinstance(i,basestring):
-					OrList.append(i)
-			elif i != "&":
-				OrList.append([i])
-		return makeAndLists(OrList, 0, [])
 	else:
-		for i in stack:
-			if not isinstance(i,basestring):
-				for j in i:
-					OrList.append([j])
-			elif i != "|":
-				OrList.append([i]) 
-		return OrList
+		return stack[0]
+
