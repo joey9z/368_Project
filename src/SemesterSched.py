@@ -1,7 +1,7 @@
 import DankMath
 
 class SemesterSched:
-	def __init__(self, season, year, completedCoursesList, crsesTaking):
+	def __init__(self, season, year, completedCoursesList, crsesTaking, allCourses):
 		self.season = season
 		self.year = year
 		self.coursesTaken = []
@@ -12,6 +12,7 @@ class SemesterSched:
 		for item in crsesTaking:
 			self.addCourseTaking(item)
 		self.concurrentList = []
+		self.allCourses = allCourses
 		
 	#determines if a course is valid based on semester offered and prereqs and then adds it
 	def addCourseTaking(self, crse):
@@ -46,7 +47,7 @@ class SemesterSched:
 
 		
 	def concurrencyMet(self):
-		for thing in concurrentList[schedIndex][:][:]:
+		for thing in self.concurrentList[schedIndex][:][:]:
 			if((thing.intersection(set()) != set()) and set(self.coursesTaking).issuperset(set(thing))):
 				return True
 		return False #default if none of concurrencies met.
@@ -57,12 +58,12 @@ class SemesterSched:
 		#steps:
 		#find largest fraction weighted course remaining
 		#this assumes weights have been applied at the beginning of the program.
-		validSubset = listDiff(listDiff(allCourses, self.coursesTaken), coursesTaking)
-		crse = maxValuedCourse(validSubset)#this should copy an object... do I need to worry about this?
-		if(crse.preReqsSatisfied(coursesTaken,concurrentList,schedInd)):
-			return self
+		validSubset = DankMath.listDiff(DankMath.listDiff(allCourses, self.coursesTaken), self.coursesTaking)
+		crse = DankMath.maxValuedCourse(validSubset)#this should copy an object... do I need to worry about this?
+		if(crse.prereqsSatisfied(self.coursesTaken,self.concurrentList,schedInd)):
+			return crse
 		else:
-			return crse.getDeepestPre(coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
+			return crse.getDeepestPre(self.coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
 		#after the schedule is created, iterate over it again to determine if concurrency met
 	
 	def generateSem(self,priorPushList):
@@ -71,20 +72,20 @@ class SemesterSched:
 		schedInd = 0
 		
 		for prior in priorPushList:#load prior push list
-			self.unconditonalAddCourse(nextCourse(allCourses,schedInd))
+			self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))
 			schedInd+=1
 			
 		while(self.semCreditTotal < 14):
-			self.unconditonalAddCourse(nextCourse(allCourses,schedInd))
+			self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))
 		for crs in self.coursesTaking:
 			if(crs.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
 				conNotMet.append(1)
 			else:
 				conMet.append(0)#use pop
-				#self.unconditionalAddCourse(nextCourse(allCourses,schedInd))#should cause necessary concurrent to be added
+				#self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))#should cause necessary concurrent to be added
 			schedInd+=1
 		if(sum(conNotMet) == 1):
-			self.unconditionalAddCourse(nextCourse(allCourses,schedInd))#first patch for concurrency
+			self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))#first patch for concurrency
 			schedInd+=1
 			if(not self.concurrencyMet()):#change the function concMet to rereqs sat somehow
 				conNotMet.append(1)
@@ -109,14 +110,14 @@ class SemesterSched:
 				n+=1#increment to determine which courses are not satisfied still
 				#ok, so there is a flaw in the logic here. if I take out a course, it may through
 				#off other courses that I satisfy the prerequisites for that depend on it.
-				nextSubset = allCourses#the code will separate this from coursesTaking.
+				nextSubset = self.allCourses#the code will separate this from coursesTaking.
 			for replacedCrs in pushList:
 				#replace each course
-				tempCrse = nextCourse(allCourses,schedInd)
+				tempCrse = self.nextCourse(self.allCourses,schedInd)
 				while(tempCrse.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
-					nextSubset = listDiff(nextSubset, [tempCrse])
-					tempCrse = nextCourse(nextSubset,schedInd)
-				self.unconditonalAddCourse(nextCourse(allCourses,schedInd))
+					nextSubset = DankMath.listDiff(nextSubset, [tempCrse])
+					tempCrse = self.nextCourse(nextSubset,schedInd)
+				self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))
 				
 		for rem in removeList:
 			removeList.pop(rem)#clears out the pushed courses from the current semester
