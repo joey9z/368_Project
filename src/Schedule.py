@@ -36,9 +36,9 @@ class Schedule:
 			recObjList = []
 			recObjLL = []
 			req = EECore+ECESeminars+ECESenDes#combine for efficiency and readibility
-			for str in req:
+			for i in req:
 				for C in allCourses:
-					if(str == C.getTitle()):
+					if(i == C.getTitle()):
 						recObjList.append(C)
 			
 			cnt = 0
@@ -52,7 +52,7 @@ class Schedule:
 				
 			crsesLacking += listDiff(recObjList, allCrsTaking)#sets only have titles of courses, need to translate
 			#seminars(200 and 400)
-			crsesLacking += minDiff(allCrsTaking, recObjLL)
+			crsesLacking += DankSetsAndLists.minDiff(allCrsTaking, recObjLL)
 			
 			#then check if each semesterSched was valid
 			for lack in crsesLacking:
@@ -80,7 +80,7 @@ class Schedule:
 				
 			crsesLacking += listDiff(recObjList, allCrsTaking)#sets only have titles of courses, need to translate
 			#seminars(200 and 400)
-			crsesLacking += minDiff(allCrsTaking, recObjLL)
+			crsesLacking += DankSetsAndLists.minDiff(allCrsTaking, recObjLL)
 			
 			#then check if each semesterSched was valid
 			for lack in crsesLacking:
