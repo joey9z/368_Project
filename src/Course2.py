@@ -1,7 +1,7 @@
 import DankMath
 import operator#used for finding key corresponding to max value in a dictionary in tunnelling methods around line 120
 
-class Course:
+class Course2:
 	def __init__(self, title, prereqs, description, priority, credits, validSems):
 		self.title = title
 		self.prereqListList = []
@@ -78,10 +78,10 @@ class Course:
 	def prereqsSatisfied(self, compCrseList, concurrentList,schedIndex):#concurrent list is likely to be empty in most cases
 		#"""determines if any group of the groups prerequisites is satisfied as well as concurrency"""
 		satisfied = 0
-		concurrentFlag = 1
+		concurrencyFlag = 1
 		i = 0
 		j = 0
-		for prereqL in prereqListList:
+		for prereqL in self.prereqListList:
 			prereqSet = set(prereqL)
 			
 			concurrencyFlag = 0
