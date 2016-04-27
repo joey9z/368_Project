@@ -21,7 +21,7 @@ class Schedule:
 			
 	
 	def isValid(self):
-	"""checks AND (apparently) corrects schedule"""
+		"""checks AND (apparently) corrects schedule"""
 		crsesLacking = []
 		allCrsTaking = []
 		for sem in self.semesters:
@@ -85,7 +85,7 @@ class Schedule:
 			#then check if each semesterSched was valid
 			for lack in crsesLacking:
 				replace(lack)#replaces last needed courses
-		else
+		else:
 			print("Invalid degree type attribute\n")
 	
 	def replace(self, crsToAdd, allCoursesTaking):
@@ -95,7 +95,7 @@ class Schedule:
 				for prereqL in crs.getPrereqListList():
 					for prereq in prereqL:
 						allPrereqs.append(prereq)#progressively accumulates the prereqs that were needed as the schedule was built
-				if(!(((self.attribute == "EE" and (crs.getTitle() in EECore or crs.getTitle() in simpleEEAdvSel)) or (self.attribute == "CompE" and(crs.getTitle() in CompECore or crs.getTitle in simpleCompESel))) or crs.getTitle() in ECESeminars or crs.getTitle() in ECESenDes)):
+				if(not(((self.attribute == "EE" and (crs.getTitle() in EECore or crs.getTitle() in simpleEEAdvSel)) or (self.attribute == "CompE" and(crs.getTitle() in CompECore or crs.getTitle in simpleCompESel))) or crs.getTitle() in ECESeminars or crs.getTitle() in ECESenDes)):
 					#if not in the required categories of courses
 					if(crs not in allPrereqs):
 						#course is not necessary, can replace

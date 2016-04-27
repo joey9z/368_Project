@@ -1,11 +1,11 @@
-import dankMath.py
+import DankMath
 
 class SemesterSched:
 	def __init__(self, season, year, completedCoursesList, crsesTaking):
 		self.season = season
 		self.year = year
 		self.coursesTaken = []
-		for crse in completedCoursesList
+		for crse in completedCoursesList:
 			self.coursesTaken.append(crse)
 		self.coursesTaking = []
 		self.semCreditTotal = 0
@@ -91,6 +91,7 @@ class SemesterSched:
 			else:
 				conMet.append(0)#use pop
 		elif(sum(conNotMet) == 0):
+			pass
 			#peachy keen!
 			#quit now while the going's good!
 		else:
@@ -99,6 +100,7 @@ class SemesterSched:
 			removeList
 			for ob in self.coursesTaking:
 				if(ob.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
+					pass
 					#conNotMet.append(0)
 				else:
 					#conNotMet.append(1)
@@ -122,6 +124,7 @@ class SemesterSched:
 			
 	
 	def fixAndReplace(self):#to be implemented
+		pass
 		#will need to have the minimum intersections
 	
 		

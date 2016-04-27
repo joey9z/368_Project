@@ -1,5 +1,5 @@
-import DankMath.py
-import operator.py#used for finding key corresponding to max value in a dictionary in tunnelling methods around line 120
+import DankMath
+import operator#used for finding key corresponding to max value in a dictionary in tunnelling methods around line 120
 
 class Course:
 	def __init__(self, title, prereqs, description, priority, credits, validSems):
@@ -72,12 +72,11 @@ class Course:
 		return validSems
 		
 	def fromDict(self, obj):
-		""" copies the attributes of a dict into the class instance"""
-        for key, val in obj.iteritems():
-            setattr(self, key, val)
+		for key, val in obj.iteritems():
+			setattr(self, key, val)
 	
 	def prereqsSatisfied(self, compCrseList, concurrentList,schedIndex):#concurrent list is likely to be empty in most cases
-		"""determines if any group of the groups prerequisites is satisfied as well as concurrency"""
+		#"""determines if any group of the groups prerequisites is satisfied as well as concurrency"""
 		satisfied = 0
 		concurrentFlag = 1
 		i = 0
@@ -91,7 +90,7 @@ class Course:
 				#satisfied = 1#wait, just return True...
 				return 1#only need to satisfy one set, so it is okay to return
 			else:#add to concurrency list for semester
-				for(item in listDiff(prereqL, compCrseList)):
+				for item in DankMath.listDiff(prereqL, compCrseList):
 					if(item.hasConcurrentFlag):#if not all items have concurrent flag ASK ABOUT THIS SYNTAX for HASCONCURRENT FLAG
 						concurrentList[schedIndex][i].append(item), #possibly useful, not necessary
 						concurrencyFlag = 1
@@ -113,14 +112,14 @@ class Course:
 	
 	def isValid(self, seasonSem, crsList):
 		""" determines if the course is valid """
-		if(crse.isOfferedSem(seasonSem) and crse.prereqsSatisfied(crsList))
+		if(crse.isOfferedSem(seasonSem) and crse.prereqsSatisfied(crsList)):
 			return True
-		else
+		else:
 			return False
 	
 	#finds shortest set of prerequistes given a set of prerequisites
 	def bestPrereqSetIndex(self, coursesTaken):
-	""" finds shortest set of prerequistes given a set of prerequisites """
+		""" finds shortest set of prerequistes given a set of prerequisites """
 		crseNumArr = []
 		for ls in self.prereqListList:#create array to determine remaining prereqs needed for a course
 			crseNumArr.append(len(set(coursesTaken).intersection(set(self.prereqListList))))
