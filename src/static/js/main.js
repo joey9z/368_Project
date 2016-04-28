@@ -196,6 +196,7 @@ function listbox_move(listID, direction) {
 function listbox_moveacross(sourceID, destID) {
     var src = document.getElementById(sourceID);
     var dest = document.getElementById(destID);
+
     for (var count = 0; count < src.options.length; count++) {
         if (src.options[count].selected == true) {
             var option = src.options[count];
@@ -211,6 +212,29 @@ function listbox_moveacross(sourceID, destID) {
                 src.remove(count);
             }
             count--;
+        }
+    }
+    SelectSort(dest)
+}
+
+function SelectSort(SelList)
+{
+    var ID='';
+    var Text='';
+    for (x=0; x < SelList.length - 1; x++)
+    {
+        for (y=x + 1; y < SelList.length; y++)
+        {
+            if (SelList[x].value > SelList[y].value)
+            {
+                // Swap rows
+                ID=SelList[x].value;
+                Text=SelList[x].text;
+                SelList[x].value=SelList[y].value;
+                SelList[x].text=SelList[y].text;
+                SelList[y].value=ID;
+                SelList[y].text=Text;
+            }
         }
     }
 }
