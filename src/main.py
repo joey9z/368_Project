@@ -36,9 +36,6 @@ class APIHandler(webapp2.RequestHandler):
         self.response.write(c.description)
         self.response.write("<h2>Semesters Offered</h2>")
         self.response.write(c.semesters)
-        #self.response.write("\nFall: " + str(c.isOfferedSem("Fall")))
-        #self.response.write("\nSpring: " + str(c.isOfferedSem("Spring")))
-        #self.response.write("\nSummer: " + str(c.isOfferedSem("Summer")))
         self.response.write("<h2>Campuses</h2>")
         self.response.write(c.campuses)
         self.response.write("<h2>Course Format</h2>")
@@ -67,56 +64,77 @@ class AdminHandler(webapp2.RequestHandler):
     Admin Handler
 
     Example query: http://localhost:{port}/admin
-    Used for diagnostics; outputs the total list of purdue courses numbers
+    Used for diagnostics; outputs the total list of purdue courses
     """
     def get(self):
-        courses = update_db()
+        courses = check_db()
         
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write("Welcome to the Admin Handler\n")
         self.response.write("There are {num} courses\n".format(num=len(courses)))
         self.response.write(courses)
+
+class JSONHandler(webapp2.RequestHandler):
+    """
+    Make JSON List
+
+    Example query: http://localhost:{port}/json
+    Creates a JSON list of courses from purdue course catalog HTML file
+    """
+    def get(self):
+        with open("purdue_catalog.html") as data:
+            html = data.read()
+            m = re.findall("detail\?cat_term_in=\d{6}&amp;subj_code_in\=\w+&amp;crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", html)
         
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(m)
+
 ###############################
 ## Utility Functions
 ###############################
         
 def update_db():
-    """ Updates the database with a list of courses parsed from purdue_catalog.html """
+    """ 
+    update_db
+
+    Updates the database with all the courses for the current semester
+    """
     
     with open("courses_2016.json") as data:
         data = data.read()
 
         courses = json.loads(data)
-        courses_in_db = Course.query().fetch(keys_only=True)
 
-        return courses_in_db
+        for course in courses:
+            try:
+                [dept, course] = course.split(" ")
+                text = get_course(dept, course)
+                insert_course(dept, course, text)
+            except:
+                failures.append(course)
+
+def check_db():
+    """ 
+    check_db
+
+    Compares the database entries with the entire list of courses
+    Returns a list of courses that failed to insert into the database
+    """
+    
+    with open("courses_2016.json") as data:
+        data = data.read()
+
+        courses = json.loads(data)
+        course_keys_in_db = Course.query().fetch(keys_only=True)
 
         db_list = []
+        failures = []
 
-        for course in courses_in_db:
-            db_list.append(course.key.id())
+        for course in course_keys_in_db:
+            db_list.append(course.id())
+        failures = [i for i in courses if i.replace(" ","") not in db_list]
 
-        return db_list
-
-        # m = re.findall("detail\?cat_term_in=\d{6}&amp;subj_code_in\=\w+&amp;crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", data)
-        # courses = m if m else "nomatch"
-
-        # failures = []
-        
-        # TODO: pre-req parser asseertion fails on 
-#         insert each course into the database
-#         course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
-#         See Zool Z1030
-        # for course in courses:
-        #     try:
-        #         [dept, course] = course.split(" ")
-        #         text = get_course(dept, course)
-        #         insert_course(dept, course, text)
-        #     except:
-        #         failures.append(course)
-
-        # return failures
+        return failures
 
 def get_course(dept, num):
     """ Retrieves the raw course text from the Purdue course catalog """
@@ -199,6 +217,7 @@ def insert_course(dept, num, text):
             
 app = webapp2.WSGIApplication([
     ('/admin/?', AdminHandler),
+    ('/json/?', JSONHandler),
     ('/api/?', APIHandler),
     ('/raw/?', RawHandler)
 ], debug=True)
