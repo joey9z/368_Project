@@ -96,7 +96,7 @@ class Course2:
 
 				for item in unFufilledPrereqs: 
 					if(not item.reqType):#if not all items have concurrent flag ASK ABOUT THIS SYNTAX for HASCONCURRENT FLAG
-						# concurrentList[schedIndex][i].append(item), #possibly useful, not necessary -- not necessary, not used
+						concurrentList[schedIndex][i].append(item), #possibly useful, not necessary 
 						concurrencyFlag = 1
 					#add a current semester concurrency list
 					#concurrentList is a list of a list of a list... first level tells which course in schedule the sublist levels deal with
@@ -116,7 +116,7 @@ class Course2:
 	
 	def isValid(self, seasonSem, crsList):
 		""" determines if the course is valid """
-		if(crse.isOfferedSem(seasonSem) and crse.prereqsSatisfied(crsList,[],0)):
+		if(self.isOfferedSem(seasonSem) and self.prereqsSatisfied(crsList,[],0)):
 			return True
 		else:
 			return False
@@ -126,27 +126,9 @@ class Course2:
 		""" finds shortest set of prerequistes given a set of prerequisites """
 		crseNumArr = []
 		for ls in self.prereqListList:#create array to determine remaining prereqs needed for a course
-			crseNumArr.append(len(set(coursesTaken).intersection(set(self.prereqListList))))
+			#TODO-> PANIC!!!!
+			#crseNumArr.append(len(set(coursesTaken).intersection(set(self.prereqListList))))
+			len(set([i.getTitle() for i in coursesTaken]).intersection(set([j.getTitle() for j in self.prereqListList])))
 		return crseNumArr.index(min(crseNumArray))
 	
-	#returns string title of the course that is farthest down the prereq chain
-	def getDeepestPre(self, coursesTaken): 
-		depth = 0
-		endPoints = {self.getTitle():depth}#initializes with top course and depth 0
-		for pre in self.prereqListList[self.bestPrereqSetIndex(coursesTaken)]:
-			pre.tunnelAndRecord(endPoints,coursesTaken, depth)
-		#dict should be formed now, so determine farthest down
-		return max(endPoints.iteritems(), key=operator.itemgetter(1))[0]#this recursion stuff hurt, but should work
 	
-	#burrows down the prerequisite chain, recording depths, helper function to getDeepestPre
-	def tunnelAndRecord(self, preDict, coursesTaken, depth):
-		depth += 1#recursive incrementing will occur
-		if(self.prereqListList[self.bestPrereqSetIndex(coursesTaken)] == []):#no prereqs, end of a chain
-			if(preDict.has_key(self.getTitle()) and preDict[self.getTitle()] > depth):#entry already in dictionary and at lower depth
-				preDict[self.getTitle()] = depth#change entry depth, basically, doesn't record if key already in at lower depth
-			else:
-				preDict[self.getTitle()] = depth
-		else:
-			for item in self.prereqListList[self.bestPrereqSetIndex(coursesTaken)]:
-				item.tunnelAndRecord(preDict, coursesTaken, depth)#REEEECUUURRRRSSIOOOONNNN!!!!!
-		

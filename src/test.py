@@ -4,7 +4,8 @@ from Course2 import Course2
 import DankMath
 
 c = Course2("ECE20000",[],"Some lame Course",0,1.0,["Fall","Spring"])
-e = Course2("ECE20001",[],"Some lame Course",0,1.0,["Fall","Spring"])
+e = Course2("ECE20100",[],"Some lame Course",0,1.0,["Fall","Spring"])
+print "woo" if c.isValid("Fall",[]) else "Boo"
 a = SemesterSched("Fall",2016,[],[],[c,e])
 a.generateSem([])
 

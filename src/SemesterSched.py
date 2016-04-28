@@ -63,7 +63,8 @@ class SemesterSched:
 		if(crse.prereqsSatisfied(self.coursesTaken,self.concurrentList,schedInd)):
 			return crse
 		else:
-			return crse.getDeepestPre(self.coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
+			return cres.prereqListList[crse.bestPrereqSetIndex()][0]
+			#return crse.getDeepestPre(self.coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
 		#after the schedule is created, iterate over it again to determine if concurrency met
 	
 	def generateSem(self,priorPushList):
@@ -127,6 +128,29 @@ class SemesterSched:
 	def fixAndReplace(self):#to be implemented
 		pass
 		#will need to have the minimum intersections
+
+		#returns string title of the course that is farthest down the prereq chain
+	def getDeepestPre(crse, coursesTaken): 
+		depth = 0
+		endPoints = {crse.getTitle():depth}#initializes with top course and depth 0
+		for pre in crse.prereqListList[crse.bestPrereqSetIndex(coursesTaken)]:
+			pre.tunnelAndRecord(endPoints,coursesTaken, depth)
+		#dict should be formed now, so determine farthest down
+		return max(endPoints.iteritems(), key=operator.itemgetter(1))[0]#this recursion stuff hurt, but should work
+	
+	#burrows down the prerequisite chain, recording depths, helper function to getDeepestPre
+	def tunnelAndRecord(crse, preDict, coursesTaken, depth):
+		depth += 1#recursive incrementing will occur
+		if(crse.prereqListList[crse.bestPrereqSetIndex(coursesTaken)] == []):#no prereqs, end of a chain
+			if(preDict.has_key(crse.getTitle()) and preDict[crse.getTitle()] > depth):#entry already in dictionary and at lower depth
+				preDict[crse.getTitle()] = depth#change entry depth, basically, doesn't record if key already in at lower depth
+			else:
+				preDict[crse.getTitle()] = depth
+		else:
+			for item in crse.prereqListList[crse.bestPrereqSetIndex(coursesTaken)]:
+				if allCourses.has_key(item.course):
+					tunnelAndRecord(allCourses[item.course], preDict, coursesTaken, depth)#REEEECUUURRRRSSIOOOONNNN!!!!!
+		
 	
 		
 		

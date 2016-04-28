@@ -85,10 +85,8 @@ def parseprereq(text):
 		text = text.replace(" |  ALEKS Math Assessment 085","")
 		text = text.replace(" |  ALEKS Math Assessment 075","")
 		text = text.replace("ALEKS Math Assessment 085","")
-		#text = text.strip("(")
-		#text = text.strip(")")
+
 	list1 = text.strip().split()
-	#print list1
 	# fun with stacks
 	stack = []
 	while list1 != []:
@@ -114,7 +112,6 @@ def parseprereq(text):
 		else:
 			stack.append([i + list1.pop(0)])
 	# some courses reference non-existant or outdated information. (EE255, ECE 46200)...
-	#print stack
 	while len(stack) > 2:
 		a = stack.pop()
 		op = stack.pop()
@@ -127,7 +124,6 @@ def parseprereq(text):
 			print "uh-oh\n"
 			print(op)	
 			print("\n")	
-	#print stack
 	if len(stack) < 1:
 		return []
 	else:
