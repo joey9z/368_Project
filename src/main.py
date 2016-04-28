@@ -1,6 +1,7 @@
 import webapp2
 import re
 import PrereqParser
+import json
 
 from models import Requisite, RequisiteList, Course
 from lxml import html
@@ -71,13 +72,8 @@ class AdminHandler(webapp2.RequestHandler):
     def get(self):
         courses = update_db()
         
-        ece_start = courses.index("ECE 15200")
-        ece_end = courses.index("ECE I4940")
-        
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write("Welcome to the Admin Handler\n")
-        self.response.write("ECE courses start at {start}\n".format(start=ece_start))
-        self.response.write("ECE courses end at {end}\n".format(end=ece_end))
         self.response.write("There are {num} courses\n".format(num=len(courses)))
         self.response.write(courses)
         
@@ -88,22 +84,39 @@ class AdminHandler(webapp2.RequestHandler):
 def update_db():
     """ Updates the database with a list of courses parsed from purdue_catalog.html """
     
-    with open("purdue_catalog.html") as data:
+    with open("courses_2016.json") as data:
         data = data.read()
 
-        m = re.findall("detail\?cat_term_in=\d{6}&amp;subj_code_in\=\w+&amp;crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", data)
-        courses = m if m else "nomatch"
+        courses = json.loads(data)
+        courses_in_db = Course.query().fetch(keys_only=True)
+
+        return courses_in_db
+
+        db_list = []
+
+        for course in courses_in_db:
+            db_list.append(course.key.id())
+
+        return db_list
+
+        # m = re.findall("detail\?cat_term_in=\d{6}&amp;subj_code_in\=\w+&amp;crse_numb_in=[\d\w]{5}\">(\w+ [\d\w]{5}) - [\w ]*", data)
+        # courses = m if m else "nomatch"
+
+        # failures = []
         
         # TODO: pre-req parser asseertion fails on 
 #         insert each course into the database
 #         course numbers are a total of 5 characters: [(optional starting letter) (4 digits)] or [(5 digits)]
 #         See Zool Z1030
-        for course in courses[0:100]:
-            [dept, course] = course.split(" ")
-            text = get_course(dept, course)
-            insert_course(dept, course, text)
+        # for course in courses:
+        #     try:
+        #         [dept, course] = course.split(" ")
+        #         text = get_course(dept, course)
+        #         insert_course(dept, course, text)
+        #     except:
+        #         failures.append(course)
 
-        return courses
+        # return failures
 
 def get_course(dept, num):
     """ Retrieves the raw course text from the Purdue course catalog """
@@ -111,6 +124,7 @@ def get_course(dept, num):
     # semester: 10 = Fall, 20 = Spring, 30 = Summer
     host = "https://selfservice.mypurdue.purdue.edu/prod/bwckctlg.p_disp_course_detail"
     query = "?cat_term_in={term}&subj_code_in={dept}&crse_numb_in={num}".format(term="201620", dept=dept, num=num)
+    urlfetch.set_default_fetch_deadline(600)
     result = urlfetch.fetch(host+query)
     
     if result.status_code == 200:
