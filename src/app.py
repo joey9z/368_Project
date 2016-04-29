@@ -28,7 +28,7 @@ class SubmitHandler(webapp2.RequestHandler):
     Submit Handler
     
     serves the /submit page
-    will initiate schedule generation
+    initiates schedule generation
 
     """
 
@@ -40,8 +40,8 @@ class SubmitHandler(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         #self.response.headers['Content-Type'] = 'plain/text'
 
-        courses = {}
-        semesters = []
+        courses = {}    # dictionary to store all courses
+        semesters = []  # list of SemesterSched objects
         
         # assemble the graph of course data
 
@@ -51,12 +51,15 @@ class SubmitHandler(webapp2.RequestHandler):
             for k,v in data.iteritems():
                 courses[v['department'] + v['number']] = Course2(v)
 
-        # get the request paramters, and make  them into a dict
+        # get the request parameters, and make them into a dict
 
         params = self.request.params.mixed()
 
         if not "keywords" in params:
-            params["keywords"] = ["circuit", "Microprocessor", "signal", "system","ece","com"]
+            params["keywords"] = ["circuit", "Microprocessor", "signal", "system","ece"]
+        else:
+            params["keywords"] = params["keywords"].strip().split("\n")
+            print params["keywords"]
 
         if "courses_taken" in params:
             params["courses_taken"] = params["courses_taken"].strip().replace(" ", "").split("\n")
@@ -69,7 +72,6 @@ class SubmitHandler(webapp2.RequestHandler):
         # convert seasons: Spring = 10, Summer = 20, Fall = 30
 
         for sem in params["semesters"]:
-            print sem
             season = "default"
             year = sem[0:4]
 
@@ -82,9 +84,17 @@ class SubmitHandler(webapp2.RequestHandler):
 
         # apply keyword weights to each course
 
+        course_matches = []
+
         applyAllWeights(courses, params["keywords"])
 
-        # maxCourse = maxValuedCourse(courses)
+        for i in range(0,10):
+            maxCourse = maxValuedCourse(courses)
+            print maxCourse.getTitle()
+            del courses[maxCourse.getID()]
+            course_matches.append(maxCourse.getID())
+
+        print course_matches
 
         # self.response.write(maxCourse.getTitle() + "\n\n\n")
 
@@ -115,7 +125,8 @@ class SubmitHandler(webapp2.RequestHandler):
                   "courses": ["ECE 301", "ECE 302", "ECE 270", "ECE 264"]
                 }
             ],
-            "received": params
+            "received": params,
+            "course_matches": course_matches
 
         }
         

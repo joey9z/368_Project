@@ -1,9 +1,11 @@
 import webapp2
 import re
-import pickle
+import os
+import jinja2
 import PrereqParser
 import json
 from Course2 import Course2
+jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
 
 from models import Requisite, RequisiteList, Course
 from lxml import html
@@ -19,31 +21,42 @@ class APIHandler(webapp2.RequestHandler):
     If no department or course is specified, it defaults to ECE 20100
     """
     def get(self):
-        dept = self.request.get("dept") or "ECE"
-        course = self.request.get("course") or "20100"
-        #html.parse("catalog.html")
+        #dept = self.request.get("dept") or "ECE"
+        #course = self.request.get("course") or "20100"
+
+        ident = self.request.get("id") or "ECE20100"
+
+        with open("course_data.json") as data:
+            courses = json.loads(data.read())
         
         # test course add function, and retrieve the course
-        text = get_course(dept, course)
-        insert_course(dept, course, text)
-        c = Course.get_by_id("{d}{c}".format(d=dept, c=course))
+        #text = get_course(dept, course)
+        #insert_course(dept, course, text)
+        #c = Course.get_by_id("{d}{c}".format(d=dept, c=course))
         
         # output the description as a test
         self.response.headers['Content-Type'] = 'text/html'
+
+        print courses[ident]
+
+        template = jinja.get_template('course.html')
+        html = template.render(course=courses[ident])
+
+        self.response.write(html)
         
         # output collected parameters to verify accuracy
         
-        self.response.write("<h1>{dept} {num} - {title} ({cr} Credits)</h1>".format(dept = c.department, num = c.number, cr=c.credits, title=c.title))
-        self.response.write("<h2>Description</h2>")
-        self.response.write(c.description)
-        self.response.write("<h2>Semesters Offered</h2>")
-        self.response.write(c.semesters)
-        self.response.write("<h2>Campuses</h2>")
-        self.response.write(c.campuses)
-        self.response.write("<h2>Course Format</h2>")
-        self.response.write(c.form)
-        self.response.write("<h2>Requisites</h2>")
-        self.response.write(c.requisites)
+        # self.response.write("<h1>{dept} {num} - {title} ({cr} Credits)</h1>".format(dept = c.department, num = c.number, cr=c.credits, title=c.title))
+        # self.response.write("<h2>Description</h2>")
+        # self.response.write(c.description)
+        # self.response.write("<h2>Semesters Offered</h2>")
+        # self.response.write(c.semesters)
+        # self.response.write("<h2>Campuses</h2>")
+        # self.response.write(c.campuses)
+        # self.response.write("<h2>Course Format</h2>")
+        # self.response.write(c.form)
+        # self.response.write("<h2>Requisites</h2>")
+        # self.response.write(c.requisites)
     
 class RawHandler(webapp2.RequestHandler):
     """

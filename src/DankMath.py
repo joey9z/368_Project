@@ -26,6 +26,7 @@ def maxValuedCourse(allCourses):
 			if course.getWeight() > maxWeight:
 				maxWeight = course.getWeight()
 				maxCourse = course		
+				print maxWeight
 		return maxCourse
 	else:
 		return max(allCourses,key=attrgetter('weight'))

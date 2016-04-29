@@ -244,13 +244,27 @@ function processData() {
         
         let data = JSON.parse(this.responseText);   // convert the data to JavaScript Notation
         console.log(data);
-        makeSemesterTables(data.semesters);     // generate tables to represent the semesters
+        //makeSemesterTables(data.semesters);     // generate tables to represent the semesters
+        makeMatchList(data.course_matches)
     }
     // the request was not successful
     else if (this.readyState == 4 && this.status != 200)
     {
         console.log("Problem!");
     }
+}
+    
+function makeMatchList(matches) {
+    let main = document.querySelector("div.content");   // find the main div
+    let list = document.createElement("ul");
+    
+    for (let match of matches)
+    {
+        let item = document.createElement("li");
+        item.innerHTML = "<a href=/api?id="+match+">"+match+"</a>";
+        list.appendChild(item);
+    }
+    main.appendChild(list);
 }
 
 /****************************************
