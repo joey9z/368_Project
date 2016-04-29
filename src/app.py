@@ -28,6 +28,8 @@ class SubmitHandler(webapp2.RequestHandler):
     
     serves the /submit page
     will initiate schedule generation
+
+    Spring = 10, Summer = 20, Fall = 30
     """
 
     def post(self):
@@ -35,9 +37,10 @@ class SubmitHandler(webapp2.RequestHandler):
     def get(self):
         self.fun()
     def fun(self):
-        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Content-Type'] = 'application/json'
 
         courses = {}
+        semesters = []
         
         with open("course_data.json") as data:
             data = json.loads(data.read())
@@ -49,18 +52,13 @@ class SubmitHandler(webapp2.RequestHandler):
 
         maxCourse = maxValuedCourse(courses)
 
-        self.response.write(maxCourse.getTitle() + "\n\n\n")
+        # self.response.write(maxCourse.getTitle() + "\n\n\n")
 
-        self.response.write(str(maxCourse.getWeight()) + "\n\n\n")    
-        self.response.write(str(maxCourse.getDescription()) + "\n\n\n")
-
-        SemsOnCampus = self.request.get("semesters")
+        # self.response.write(str(maxCourse.getWeight()) + "\n\n\n")    
+        # self.response.write(str(maxCourse.getDescription()) + "\n\n\n")
 
         #Sched = Schedule(SemsOnCampus,DegreeType)
         #Sched.generateSched()
-        Sems= []
-        for sem in SemsOnCampus:
-            Sems.append(sem.season,sem.year,[],[],allCourses)
         #Sched = Schedule(Sems, DegreeType)
 
         params = self.request.params.mixed()
@@ -70,7 +68,8 @@ class SubmitHandler(webapp2.RequestHandler):
         else:
             params["courses_taken"] = ["ECE20100", "ECE20000"]
 
-
+        for sem in params["semesters"]:
+            semesters.append(Semester(sem))
         
         schedule = {
             "semesters": [
