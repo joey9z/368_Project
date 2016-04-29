@@ -4,7 +4,6 @@ import jinja2
 import json
 from DankMath import *
 from Course2 import Course2
-import DankMath
 from SemesterSched import SemesterSched
 from Schedule import Schedule
 
@@ -31,7 +30,6 @@ class SubmitHandler(webapp2.RequestHandler):
     serves the /submit page
     will initiate schedule generation
 
-    Spring = 10, Summer = 20, Fall = 30
     """
 
     def post(self):
@@ -40,45 +38,69 @@ class SubmitHandler(webapp2.RequestHandler):
         self.fun()
     def fun(self):
         self.response.headers['Content-Type'] = 'application/json'
+        #self.response.headers['Content-Type'] = 'plain/text'
 
         courses = {}
         semesters = []
         
+        # assemble the graph of course data
+
         with open("course_data.json") as data:
             data = json.loads(data.read())
 
             for k,v in data.iteritems():
                 courses[v['department'] + v['number']] = Course2(v)
 
-        applyAllWeights(courses, ["circuit", "Microprocessor", "signal", "system","ece","com"])
-
-        maxCourse = maxValuedCourse(courses)
-
-        # self.response.write(maxCourse.getTitle() + "\n\n\n")
-
-        # self.response.write(str(maxCourse.getWeight()) + "\n\n\n")    
-        # self.response.write(str(maxCourse.getDescription()) + "\n\n\n")
-
-        #Sched = Schedule(SemsOnCampus,DegreeType)
-        #Sched.generateSched()
-        #Sched = Schedule(Sems, DegreeType)
+        # get the request paramters, and make  them into a dict
 
         params = self.request.params.mixed()
 
-        DankMath.applyAllWeights(courses, ["programming", "optimization", "ECE", "electricity", "circuit", "C++", "Microprocessor","signal", "system"])
-        sem = SemesterSched("Fall",2016,[],[])
-        sem.generateSem([],courses)
-        for crs in sem.coursesTaking:
-            self.response.write(crs.getID() + crs.getTitle() + crs.getDescription() + "\n")
-        #params["courses_taken"] = params["courses_taken"].strip().split("\n")
+        if not "keywords" in params:
+            params["keywords"] = ["circuit", "Microprocessor", "signal", "system","ece","com"]
 
         if "courses_taken" in params:
             params["courses_taken"] = params["courses_taken"].strip().replace(" ", "").split("\n")
         else:
             params["courses_taken"] = ["ECE20100", "ECE20000"]
 
+        if "semesters" not in params:
+            params["semesters"] = ["201620", "201630"]
+
+        # convert seasons: Spring = 10, Summer = 20, Fall = 30
+
         for sem in params["semesters"]:
-            semesters.append(Semester(sem))
+            print sem
+            season = "default"
+            year = sem[0:4]
+
+            if sem[4:] == "10":
+                season = "Spring"
+            elif sem[4:] == "20":
+                season = "Summer"
+            elif sem[4:] == "30":
+                season = "Fall"
+
+        # apply keyword weights to each course
+
+        applyAllWeights(courses, params["keywords"])
+
+        # maxCourse = maxValuedCourse(courses)
+
+        # self.response.write(maxCourse.getTitle() + "\n\n\n")
+
+        # self.response.write(str(maxCourse.getWeight()) + "\n\n\n")    
+        # self.response.write(str(maxCourse.getDescription()) + "\n\n\n")
+
+        semesters.append(SemesterSched(season, year, params["courses_taken"]))
+
+        #schedule = Schedule(semesters, params["major"])
+        #schedule.generateSched()
+
+        # for sem in semesters:
+        #     print "season: " + sem.season
+        #     print "year: " + sem.year
+        #     print "courses: " + json.dumps(sem.coursesTaken)
+        #     print "\n"
         
         schedule = {
             "semesters": [
@@ -94,6 +116,7 @@ class SubmitHandler(webapp2.RequestHandler):
                 }
             ],
             "received": params
+
         }
         
         self.response.write(json.dumps(schedule))

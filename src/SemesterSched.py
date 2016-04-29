@@ -1,16 +1,14 @@
 import DankMath
 
 class SemesterSched:
-	def __init__(self, season, year, completedCoursesList, crsesTaking):
+	def __init__(self, season, year, completedCourses):
 		self.season = season
 		self.year = year
 		self.coursesTaken = []
-		for crse in completedCoursesList:
+		for crse in completedCourses:
 			self.coursesTaken.append(crse)
 		self.coursesTaking = []
 		self.semCreditTotal = 0
-		for item in crsesTaking:
-			self.addCourseTaking(item)
 		self.concurrentList = []
 		
 	#determines if a course is valid based on semester offered and prereqs and then adds it
