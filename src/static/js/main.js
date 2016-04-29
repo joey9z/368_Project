@@ -13,7 +13,19 @@ console.log("Hello, world!");
 function initialize() {
     let submit = document.querySelector("input[name=submit]");
     populateForms();
+
+    var listen1 = document.querySelector("select[name=grad_year]");
+    var listen2 = document.querySelector("select[name=start_year]");
+    var listen3 = document.querySelector("select[name=start_sem]");
+    var listen4 = document.querySelector("select[name=grad_sem]");
+
+    listen1.addEventListener("change", clearForms, false);
+    listen2.addEventListener("change", clearForms, false);
+    listen3.addEventListener("change", clearForms, false);
+    listen4.addEventListener("change", clearForms, false);
     
+    submit.addEventListener("click", makeRequest, false);
+
     submit.addEventListener("click", makeRequest, false);
 };
 
@@ -22,6 +34,110 @@ function initialize() {
 *
 * dynamically populates the form's select elements
 *****************************************************/
+function clearForms(){
+    let semesters = document.querySelector("select[name=semesters]");
+    let not_semesters = document.querySelector("select[name=not_semesters]");
+    let grad_year = document.querySelector("select[name=grad_year]");
+    let start_year = document.querySelector("select[name=start_year]");
+    let grad_sem = document.querySelector("select[name=grad_sem]");
+
+    while (semesters.firstChild)
+    {
+        semesters.removeChild(semesters.firstChild);
+    }
+
+    while (not_semesters.firstChild)
+    {
+        not_semesters.removeChild(not_semesters.firstChild);
+    }
+
+    curr_sem = updateForms();
+    if(semesters.firstChild.value != null)
+    {
+        while (semesters.firstChild.value.slice(0,4) < curr_sem)
+        {
+            semesters.removeChild(semesters.firstChild);
+        }
+
+        if(grad_sem.value == "Spring")
+        {
+            sem = 10;
+        }
+        else
+        {
+            sem = 30;
+        }
+
+        max_sem = grad_year.value+''+sem;
+
+        while (semesters.lastChild.value > max_sem)
+        {
+            semesters.removeChild(semesters.lastChild);
+        }
+        if(not_semesters.lastChild.value != null)
+        {
+            do
+            {
+                if(not_semesters.lastChild.value >= max_sem)
+                {
+                    not_semesters.removeChild(not_semesters.lastChild);
+                }
+                else
+                {
+                    break;
+                }
+            }while(not_semesters.length > 0)
+
+        }
+    }
+
+}
+
+function updateForms(){
+    let semesters = document.querySelector("select[name=semesters]");
+    let not_semesters = document.querySelector("select[name=not_semesters]");
+    let grad_year = document.querySelector("select[name=grad_year]");
+    let start_year = document.querySelector("select[name=start_year]");
+
+    let year_offset = (grad_year.value - start_year.value);
+
+    let sem_names = ["Spring", "Summer", "Fall"];
+    let sems = [10, 20, 30];
+
+    let curr_year = start_year.value;
+    let curr_sem = new Date().getFullYear();
+    for (let year = curr_sem; year <= grad_year.value; year++)
+    {
+        // populate semester select elements
+        for (let i = 0; i < sems.length; i++)
+        {
+            let option = document.createElement("option");
+            option.value = year+''+sems[i];
+            option.text = sem_names[i] + " " + year;
+            sems[i]==20 ? not_semesters.appendChild(option) : semesters.appendChild(option);
+        }
+        
+        // populate grad year elements
+        let option = document.createElement("option");
+        option.value = year;
+        option.text = year;
+        SelectSort(option);
+
+        //grad_year.appendChild(option);
+        
+        // populate start year elements
+        option = document.createElement("option");
+        option.value = year-5;
+        option.text = year-5;
+        SelectSort(option);
+
+        //start_year.appendChild(option);
+    }
+    SelectSort(semesters);
+    SelectSort(not_semesters);  
+
+    return (curr_sem);
+}
 
 function populateForms() {
     let semesters = document.querySelector("select[name=semesters]");
@@ -33,7 +149,7 @@ function populateForms() {
     const default_start = 2013;
     const default_grad = 2017;
     
-    let sem_names = ["Fall", "Spring", "Summer"];
+    let sem_names = ["Spring", "Summer", "Fall"];
     let sems = [10, 20, 30];
     let courses = ["ECE 20000", "ECE 20100", "ECE 20700"];
     
@@ -47,7 +163,7 @@ function populateForms() {
             let option = document.createElement("option");
             option.value = year+''+sems[i];
             option.text = sem_names[i] + " " + year;
-            sems[i]==30 ? not_semesters.appendChild(option) : semesters.appendChild(option);
+            sems[i]==20 ? not_semesters.appendChild(option) : semesters.appendChild(option);
         }
         
         // populate grad year elements
@@ -56,6 +172,7 @@ function populateForms() {
         option.text = year;
         if (year == default_grad) option.selected=true;
         grad_year.appendChild(option);
+        SelectSort(option);
         
         // populate start year elements
         option = document.createElement("option");
@@ -63,13 +180,14 @@ function populateForms() {
         option.text = year-5;
         if (year-5 == default_start) option.selected=true;
         start_year.appendChild(option);
+        SelectSort(option);
     }
     
     for (let course of courses)
     {
         let node = document.createTextNode(course+"\n");
         courses_taken.appendChild(node);  
-    }    
+    }
 }
 
 /****************************************

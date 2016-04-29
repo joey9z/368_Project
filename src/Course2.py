@@ -5,6 +5,7 @@ class Course2:
 	def __init__(self, obj):
 		for key, val in obj.iteritems():
 			setattr(self, key, val)
+		self.prereqListList = self.requisites
 		
 	def addPrereqSet(self, prereqs):
 		for item in prereqs:
@@ -74,7 +75,7 @@ class Course2:
 			prereqSet = set(prereqL)
 			
 			concurrencyFlag = 0
-			concurrentList[schedIndex].append([])#for each list of prereqs, initalize a new list
+			concurrentList[schedIndex - 1].append([])#for each list of prereqs, initalize a new list
 			TakenCrseNames= [j.getID() for j in compCrseList]
 			unFufilledPrereqs = [i for i in prereqL if i.course not in TakenCrseNames] 
 			if(unFufilledPrereqs == []): 
@@ -137,7 +138,11 @@ class Course2:
 		if min(lens) <= 0:
 			return 0
 		else:
-			return res[lens.index(min(lens))][0]
+			choice = res[lens.index(min(lens))][0]
+			if allCourses.has_key(choice):
+				return allCourses[choice]
+			else:
+				return None
 
 					
 

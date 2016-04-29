@@ -4,6 +4,8 @@ import jinja2
 import json
 from DankMath import *
 from Course2 import Course2
+import DankMath
+from SemesterSched import SemesterSched
 from Schedule import Schedule
 
 jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
@@ -62,6 +64,13 @@ class SubmitHandler(webapp2.RequestHandler):
         #Sched = Schedule(Sems, DegreeType)
 
         params = self.request.params.mixed()
+
+        DankMath.applyAllWeights(courses, ["programming", "optimization", "ECE", "electricity", "circuit", "C++", "Microprocessor","signal", "system"])
+        sem = SemesterSched("Fall",2016,[],[])
+        sem.generateSem([],courses)
+        for crs in sem.coursesTaking:
+            self.response.write(crs.getID() + crs.getTitle() + crs.getDescription() + "\n")
+        #params["courses_taken"] = params["courses_taken"].strip().split("\n")
 
         if "courses_taken" in params:
             params["courses_taken"] = params["courses_taken"].strip().replace(" ", "").split("\n")

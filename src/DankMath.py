@@ -21,20 +21,24 @@ def maxValuedCourse(allCourses):
 	""" returns course object with maximum weight parameter """
 	maxWeight = -1
 	maxCourse = None
-
-	for k,course in allCourses.iteritems():
-		if course.getWeight() > maxWeight:
-			maxWeight = course.getWeight()
-			maxCourse = course
-
-	return maxCourse
+	if isinstance(allCourses,dict):
+		for k,course in allCourses.iteritems():
+			if course.getWeight() > maxWeight:
+				maxWeight = course.getWeight()
+				maxCourse = course		
+		return maxCourse
+	else:
+		return max(allCourses,key=attrgetter('weight'))
 
 	
 def listDiff(listA, listB):
 	"""listA - listB, return result is a list note that this is not the same as listB - listA"""
-	SB = set([i.getTitle() for i in listB])
+	SB = set([i.getID() for i in listB])
 	res = []
+
 	if(len(listA) > 0):
+		if isinstance(listA,dict):
+			listA = listA.values()
 		if isinstance(listA[0],basestring):
 			res = [starfish for starfish in listA if starfish not in SB]
 		else:
