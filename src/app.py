@@ -2,7 +2,7 @@ import webapp2
 import os
 import jinja2
 import json
-from models import Course
+from Course2 import Course2
 
 jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
 
@@ -34,11 +34,17 @@ class SubmitHandler(webapp2.RequestHandler):
         self.fun()
     def fun(self):
         self.response.headers['Content-Type'] = 'application/json'
+
+        courses = {}
         
-        c = Course.get_by_id("ECE20100")
-        
+        with open("course_data.json") as data:
+            data = json.loads(data.read())
+
+            for k,v in data.iteritems():
+                courses[v['department'] + v['number']] = Course2(v)
+
         params = self.request.params.mixed()
-        params["courses_taken"] = params["courses_taken"].strip().split("\n")
+        #params["courses_taken"] = params["courses_taken"].strip().split("\n")
         
         schedule = {
             "semesters": [

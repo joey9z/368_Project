@@ -1,7 +1,9 @@
 import webapp2
 import re
+import pickle
 import PrereqParser
 import json
+from Course2 import Course2
 
 from models import Requisite, RequisiteList, Course
 from lxml import html
@@ -67,12 +69,13 @@ class AdminHandler(webapp2.RequestHandler):
     Used for diagnostics; outputs the total list of purdue courses
     """
     def get(self):
-        courses = check_db()
+        courses = export_courses()
         
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.write("Welcome to the Admin Handler\n")
-        self.response.write("There are {num} courses\n".format(num=len(courses)))
-        self.response.write(courses)
+        # self.response.headers['Content-Type'] = 'text/plain'
+        # self.response.write("Welcome to the Admin Handler\n")
+        # self.response.write("There are {num} courses\n".format(num=len(courses)))
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(json.dumps(courses))
 
 class JSONHandler(webapp2.RequestHandler):
     """
@@ -92,6 +95,21 @@ class JSONHandler(webapp2.RequestHandler):
 ###############################
 ## Utility Functions
 ###############################
+
+def export_courses():
+    """
+    export_courses
+
+    get all courses from the database
+    return all courses as a dictionary of course dictionaries
+    """
+    courses = Course.query().fetch()
+    dictionary = {}
+
+    for course in courses:
+        dictionary[course.department + "" + course.number] = course.to_dict()
+
+    return dictionary
         
 def update_db():
     """ 

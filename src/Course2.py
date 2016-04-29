@@ -2,20 +2,9 @@ import DankMath
 import operator#used for finding key corresponding to max value in a dictionary in tunnelling methods around line 120
 
 class Course2:
-	def __init__(self, title, prereqs, description, priority, credits, validSems):
-		self.title = title
-		self.prereqListList = []
-		for pre in prereqs:
-			self.prereqListList.append(pre)
-		self.description = []
-		for word in description:
-			self.description.append(word)
-		self.priority = priority
-		self.credits = credits
-		self.validSems = []
-		for sem in validSems:
-			self.validSems.append(sem)
-		self.weight = 0
+	def __init__(self, obj):
+		for key, val in obj.iteritems():
+			setattr(self, key, val)
 		
 	def addPrereqSet(self, prereqs):
 		for item in prereqs:
@@ -73,10 +62,6 @@ class Course2:
 	
 	def getValidSems(self):
 		return validSems
-		
-	def fromDict(self, obj):
-		for key, val in obj.iteritems():
-			setattr(self, key, val)
 	
 	def prereqsSatisfied(self, compCrseList, concurrentList,schedIndex):#concurrent list is likely to be empty in most cases
 		#"""determines if any group of the groups prerequisites is satisfied as well as concurrency"""
