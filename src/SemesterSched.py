@@ -74,16 +74,18 @@ class SemesterSched:
 		for prior in priorPushList:#load prior push list
 			self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))
 			schedInd+=1
-			
+		valid = allCourses.values()	
 		while(self.semCreditTotal < 14):
-			self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))
+			self.unconditionalAddCourse(self.nextCourse(valid,schedInd))
+			valid = DankMath.listDiff(valid,self.coursesTaking)
+			schedInd +=1
 		for crs in self.coursesTaking:
-			if(crs.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
+			if(crs.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedInd) != 1):
 				conNotMet.append(1)
 			else:
 				conMet.append(0)#use pop
 				#self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))#should cause necessary concurrent to be added
-			schedInd+=1
+			#schedInd+=1
 		if(sum(conNotMet) == 1):
 			self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))#first patch for concurrency
 			schedInd+=1
@@ -98,9 +100,9 @@ class SemesterSched:
 		else:
 			n=0
 			conNotMet = []
-			removeList
+			removeList = []
 			for ob in self.coursesTaking:
-				if(ob.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
+				if(ob.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedInd) != 1):
 					pass
 					#conNotMet.append(0)
 				else:
@@ -114,7 +116,7 @@ class SemesterSched:
 			for replacedCrs in pushList:
 				#replace each course
 				tempCrse = self.nextCourse(allCourses,schedInd)
-				while(tempCrse.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
+				while(tempCrse.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedInd) != 1):
 					nextSubset = DankMath.listDiff(nextSubset, [tempCrse])
 					tempCrse = self.nextCourse(nextSubset,schedInd)
 				self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))

@@ -2,9 +2,11 @@ import webapp2
 import os
 import jinja2
 import json
+from DankMath import *
 from Course2 import Course2
 import DankMath
 from SemesterSched import SemesterSched
+from Schedule import Schedule
 
 jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
 
@@ -35,7 +37,7 @@ class SubmitHandler(webapp2.RequestHandler):
     def get(self):
         self.fun()
     def fun(self):
-        self.response.headers['Content-Type'] = 'application/json'
+        self.response.headers['Content-Type'] = 'text/plain'
 
         courses = {}
         
@@ -45,11 +47,39 @@ class SubmitHandler(webapp2.RequestHandler):
             for k,v in data.iteritems():
                 courses[v['department'] + v['number']] = Course2(v)
 
+        applyAllWeights(courses, ["circuit", "Microprocessor", "signal", "system","ece","com"])
+
+        maxCourse = maxValuedCourse(courses)
+
+        self.response.write(maxCourse.getTitle() + "\n\n\n")
+
+        self.response.write(str(maxCourse.getWeight()) + "\n\n\n")    
+        self.response.write(str(maxCourse.getDescription()) + "\n\n\n")
+
+        SemsOnCampus = self.request.get("semesters")
+
+        #Sched = Schedule(SemsOnCampus,DegreeType)
+        #Sched.generateSched()
+        Sems= []
+        for sem in SemsOnCampus:
+            Sems.append(sem.season,sem.year,[],[],allCourses)
+        #Sched = Schedule(Sems, DegreeType)
+
         params = self.request.params.mixed()
-        DankMath.applyAllWeights(courses, ["programming", "optimization", "ECE", "design"])
+
+        DankMath.applyAllWeights(courses, ["programming", "optimization", "ECE", "electricity", "circuit", "C++", "Microprocessor","signal", "system"])
         sem = SemesterSched("Fall",2016,[],[])
         sem.generateSem([],courses)
+        for crs in sem.coursesTaking:
+            self.response.write(crs.getID() + crs.getTitle() + crs.getDescription() + "\n")
         #params["courses_taken"] = params["courses_taken"].strip().split("\n")
+
+        if "courses_taken" in params:
+            params["courses_taken"] = params["courses_taken"].strip().replace(" ", "").split("\n")
+        else:
+            params["courses_taken"] = ["ECE20100", "ECE20000"]
+
+
         
         schedule = {
             "semesters": [

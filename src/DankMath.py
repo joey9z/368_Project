@@ -4,21 +4,36 @@ from operator import attrgetter#for finding object with maximum weight in a list
 #determines the fraction of course description words that were in the keyword list
 def fractWeight(course, keywords):
 	""" determines the fraction of course description words that were in the keyword list """
+	count = 0.0
 	for word in keywords:
+		#print course.getDescription().encode('ascii','ignore')
 		count += course.getDescription().count(word)
-	return count / len(course.getDescription())		
+	if len(course.getDescription()) > 0:
+		return count #/ len(course.getDescription())
+	else:
+		return 0 
 
 def applyAllWeights(allCourses, keywords):
-	for crse in allCourses:
+	for k,crse in allCourses.iteritems():
 		crse.setWeight(fractWeight(crse, keywords))
 
 def maxValuedCourse(allCourses):
 	""" returns course object with maximum weight parameter """
-	return max(allCourses, key=attrgetter('weight'))
+	maxWeight = -1
+	maxCourse = None
+	if isinstance(allCourses,dict):
+		for k,course in allCourses.iteritems():
+			if course.getWeight() > maxWeight:
+				maxWeight = course.getWeight()
+				maxCourse = course		
+		return maxCourse
+	else:
+		return max(allCourses,key=attrgetter('weight'))
+
 	
 def listDiff(listA, listB):
 	"""listA - listB, return result is a list note that this is not the same as listB - listA"""
-	SB = set([i.getTitle() for i in listB])
+	SB = set([i.getID() for i in listB])
 	res = []
 
 	if(len(listA) > 0):
@@ -27,7 +42,7 @@ def listDiff(listA, listB):
 		if isinstance(listA[0],basestring):
 			res = [starfish for starfish in listA if starfish not in SB]
 		else:
-			res = [starfish for starfish in listA if starfish.getTitle() not in SB]
+			res = [starfish for starfish in listA if starfish.getID() not in SB]
 	return res 
 
 def setDiffOfLists(listA, listB):
