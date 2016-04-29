@@ -54,6 +54,9 @@ class Course2:
 		
 	def getTitle(self):
 		return self.title
+
+	def getID(self):
+		return self.department + self.number
 	
 	def setTitle(self, title):
 		self.title = title
@@ -87,7 +90,7 @@ class Course2:
 			
 			concurrencyFlag = 0
 			concurrentList[schedIndex].append([])#for each list of prereqs, initalize a new list
-			TakenCrseNames= [j.getTitle() for j in compCrseList]
+			TakenCrseNames= [j.getID() for j in compCrseList]
 			unFufilledPrereqs = [i for i in prereqL if i.course not in TakenCrseNames] 
 			if(unFufilledPrereqs == []): 
 				#satisfied = 1#wait, just return True...
@@ -129,12 +132,12 @@ class Course2:
 			pass
 			#TODO-> PANIC!!!!
 			#crseNumArr.append(len(set(coursesTaken).intersection(set(self.prereqListList))))
-			#len(set([i.getTitle() for i in coursesTaken]).intersection(set([j.getTitle() for j in self.prereqListList])))
+			#len(set([i.getID() for i in coursesTaken]).intersection(set([j.getID() for j in self.prereqListList])))
 		return crseNumArr.index(min(crseNumArray))
 	
 	def nextUnsatReq(self, coursesTaken, coursesTaking, allCourses):
-		taken = [i.getTitle() for i in coursesTaken]
-		taking = [i.getTitle() for i in coursesTaking]
+		taken = [i.getID() for i in coursesTaken]
+		taking = [i.getID() for i in coursesTaking]
 		res = []
 		lens = []
 		for ls in self.prereqListList:
