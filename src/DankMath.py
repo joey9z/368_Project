@@ -20,7 +20,10 @@ def listDiff(listA, listB):
 	"""listA - listB, return result is a list note that this is not the same as listB - listA"""
 	SB = set([i.getTitle() for i in listB])
 	res = []
+
 	if(len(listA) > 0):
+		if isinstance(listA,dict):
+			listA = listA.values()
 		if isinstance(listA[0],basestring):
 			res = [starfish for starfish in listA if starfish not in SB]
 		else:

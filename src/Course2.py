@@ -137,7 +137,11 @@ class Course2:
 		if min(lens) <= 0:
 			return 0
 		else:
-			return res[lens.index(min(lens))][0]
+			choice = res[lens.index(min(lens))][0]
+			if allCourses.has_key(choice):
+				return allCourses[choice]
+			else:
+				return None
 
 					
 

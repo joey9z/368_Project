@@ -1,7 +1,7 @@
 import DankMath
 
 class SemesterSched:
-	def __init__(self, season, year, completedCoursesList, crsesTaking, allCourses):
+	def __init__(self, season, year, completedCoursesList, crsesTaking):
 		self.season = season
 		self.year = year
 		self.coursesTaken = []
@@ -12,7 +12,6 @@ class SemesterSched:
 		for item in crsesTaking:
 			self.addCourseTaking(item)
 		self.concurrentList = []
-		self.allCourses = allCourses
 		
 	#determines if a course is valid based on semester offered and prereqs and then adds it
 	def addCourseTaking(self, crse):
@@ -67,26 +66,26 @@ class SemesterSched:
 			#return crse.getDeepestPre(self.coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
 		#after the schedule is created, iterate over it again to determine if concurrency met
 	
-	def generateSem(self,priorPushList):
+	def generateSem(self,priorPushList, allCourses):
 		conNotMet = []#0's if conc not met
 		pushList = []
 		schedInd = 0
 		
 		for prior in priorPushList:#load prior push list
-			self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))
+			self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))
 			schedInd+=1
 			
 		while(self.semCreditTotal < 14):
-			self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))
+			self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))
 		for crs in self.coursesTaking:
 			if(crs.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
 				conNotMet.append(1)
 			else:
 				conMet.append(0)#use pop
-				#self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))#should cause necessary concurrent to be added
+				#self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))#should cause necessary concurrent to be added
 			schedInd+=1
 		if(sum(conNotMet) == 1):
-			self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))#first patch for concurrency
+			self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))#first patch for concurrency
 			schedInd+=1
 			if(not self.concurrencyMet()):#change the function concMet to rereqs sat somehow
 				conNotMet.append(1)
@@ -111,14 +110,14 @@ class SemesterSched:
 				n+=1#increment to determine which courses are not satisfied still
 				#ok, so there is a flaw in the logic here. if I take out a course, it may through
 				#off other courses that I satisfy the prerequisites for that depend on it.
-				nextSubset = self.allCourses#the code will separate this from coursesTaking.
+				nextSubset = allCourses#the code will separate this from coursesTaking.
 			for replacedCrs in pushList:
 				#replace each course
-				tempCrse = self.nextCourse(self.allCourses,schedInd)
+				tempCrse = self.nextCourse(allCourses,schedInd)
 				while(tempCrse.prereqsSatisfied(self.coursesTaken+self.coursesTaking, self.concurrentList,schedIndex) != 1):
 					nextSubset = DankMath.listDiff(nextSubset, [tempCrse])
 					tempCrse = self.nextCourse(nextSubset,schedInd)
-				self.unconditionalAddCourse(self.nextCourse(self.allCourses,schedInd))
+				self.unconditionalAddCourse(self.nextCourse(allCourses,schedInd))
 				
 		for rem in removeList:
 			removeList.pop(rem)#clears out the pushed courses from the current semester

@@ -3,6 +3,8 @@ import os
 import jinja2
 import json
 from Course2 import Course2
+import DankMath
+from SemesterSched import SemesterSched
 
 jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
 
@@ -44,6 +46,9 @@ class SubmitHandler(webapp2.RequestHandler):
                 courses[v['department'] + v['number']] = Course2(v)
 
         params = self.request.params.mixed()
+        DankMath.applyAllWeights(courses, ["programming", "optimization", "ECE", "design"])
+        sem = SemesterSched("Fall",2016,[],[])
+        sem.generateSem([],courses)
         #params["courses_taken"] = params["courses_taken"].strip().split("\n")
         
         schedule = {
