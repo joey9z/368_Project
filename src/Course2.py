@@ -126,9 +126,31 @@ class Course2:
 		""" finds shortest set of prerequistes given a set of prerequisites """
 		crseNumArr = []
 		for ls in self.prereqListList:#create array to determine remaining prereqs needed for a course
+			pass
 			#TODO-> PANIC!!!!
 			#crseNumArr.append(len(set(coursesTaken).intersection(set(self.prereqListList))))
-			len(set([i.getTitle() for i in coursesTaken]).intersection(set([j.getTitle() for j in self.prereqListList])))
+			#len(set([i.getTitle() for i in coursesTaken]).intersection(set([j.getTitle() for j in self.prereqListList])))
 		return crseNumArr.index(min(crseNumArray))
 	
+	def nextUnsatReq(self, coursesTaken, coursesTaking, allCourses):
+		taken = [i.getTitle() for i in coursesTaken]
+		taking = [i.getTitle() for i in coursesTaking]
+		res = []
+		lens = []
+		for ls in self.prereqListList:
+			res[i] = []
+			for req in ls:
+				if  req.reqType and req.course not in taken:
+					res[i].append(req.course)
+				elif req.course not in taking + taken:
+					res[i].append(req.course)
+			lens.append(len(res[i]))
+			i += 1
+		if min(lens) <= 0:
+			return 0
+		else:
+			return res[lens.index(min(lens))][0]
+
+					
+
 	

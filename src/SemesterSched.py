@@ -63,7 +63,7 @@ class SemesterSched:
 		if(crse.prereqsSatisfied(self.coursesTaken,self.concurrentList,schedInd)):
 			return crse
 		else:
-			return cres.prereqListList[crse.bestPrereqSetIndex()][0]
+			return cres.nextUnsatReq(self.coursesTaken , self.coursesTaking, allCourses)
 			#return crse.getDeepestPre(self.coursesTaken)#hmm, think about this; the prereqsSatisfied function should be needed somewhere...
 		#after the schedule is created, iterate over it again to determine if concurrency met
 	
@@ -143,7 +143,7 @@ class SemesterSched:
 		depth += 1#recursive incrementing will occur
 		if(crse.prereqListList[crse.bestPrereqSetIndex(coursesTaken)] == []):#no prereqs, end of a chain
 			if(preDict.has_key(crse.getTitle()) and preDict[crse.getTitle()] > depth):#entry already in dictionary and at lower depth
-				preDict[crse.getTitle()] = depth#change entry depth, basically, doesn't record if key already in at lower depth
+				preDict[crse.getTitle()] = depth #change entry depth, basically, doesn't record if key already in at lower depth
 			else:
 				preDict[crse.getTitle()] = depth
 		else:

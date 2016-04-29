@@ -35,19 +35,25 @@ class Schedule:
 			"""need to get EECORE and other string lists converted to object lists for subtraction"""
 			recObjList = []
 			recObjLL = []
+
+
 			req = EECore+ECESeminars+ECESenDes#combine for efficiency and readibility
 			for i in req:
-				for C in allCourses:
-					if(i == C.getTitle()):
-						recObjList.append(C)
+				recObjList.append(allCourses[req])
+				#for C in allCourses:
+				#	if(i == C.getTitle()):
+				#		recObjList.append(C)
 			
 			cnt = 0
+
+
 			for L in ECEAdvEESel:
 				recObjLL.append([])
 				for strng in L:
-					for cs in allCourses:
-						if(strng == cs.getTitle()):
-							recObjLL[cnt].append(cs)#finish later
+					recObjLL[cnt].append(allCourses[L])
+					#for cs in allCourses:
+					#	if(strng == cs.getTitle()):
+					#		recObjLL[cnt].append(cs)#finish later
 				cnt+=1
 				
 			crsesLacking += listDiff(recObjList, allCrsTaking)#sets only have titles of courses, need to translate
