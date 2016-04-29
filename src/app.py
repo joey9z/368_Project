@@ -2,6 +2,7 @@ import webapp2
 import os
 import jinja2
 import json
+from DankMath import *
 from Course2 import Course2
 
 jinja = jinja2.Environment( loader=jinja2.FileSystemLoader( os.path.join( os.path.dirname(__file__), '') ) )
@@ -33,7 +34,7 @@ class SubmitHandler(webapp2.RequestHandler):
     def get(self):
         self.fun()
     def fun(self):
-        self.response.headers['Content-Type'] = 'application/json'
+        self.response.headers['Content-Type'] = 'text/plain'
 
         courses = {}
         
@@ -42,6 +43,15 @@ class SubmitHandler(webapp2.RequestHandler):
 
             for k,v in data.iteritems():
                 courses[v['department'] + v['number']] = Course2(v)
+
+        applyAllWeights(courses, ["circuit", "Microprocessor", "signal", "system","ece","com"])
+
+        maxCourse = maxValuedCourse(courses)
+
+        self.response.write(maxCourse.getTitle() + "\n\n\n")
+
+        self.response.write(str(maxCourse.getWeight()) + "\n\n\n")    
+        self.response.write(str(maxCourse.getDescription()) + "\n\n\n")
 
         params = self.request.params.mixed()
         #params["courses_taken"] = params["courses_taken"].strip().split("\n")
